@@ -1,0 +1,491 @@
+
+
+Index · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLARIS — NCPOR Expedition Command</title>
+<style>
+  :root{
+    --navy:#0d1b2a;
+    --navy-2:#13253a;
+    --ice:#e8f4f8;
+    --teal:#00b4c6;
+    --teal-dim:#006b7d;
+    --orange:#ff6b35;
+    --red:#ff4757;
+    --green:#2ed573;
+    --muted:#7c93a8;
+    --card:#122436;
+    --border:#1e3a52;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--navy);
+    color:var(--ice);
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height:100vh;
+    transition:background .4s ease, filter .4s ease;
+  }
+  body.expedition-mode{
+    background:#000;
+    filter:grayscale(.15) brightness(.85);
+  }
+  body.expedition-mode *{
+    animation:none !important;
+    transition:none !important;
+  }
+ 
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 28px;
+    background:linear-gradient(90deg, var(--navy-2), var(--navy));
+    border-bottom:2px solid var(--teal-dim);
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .snowflake{font-size:26px;}
+  .brand h1{font-size:20px;letter-spacing:2px;font-weight:700;}
+  .brand .tag{font-size:11px;color:var(--muted);letter-spacing:1px;}
+  .header-right{display:flex;align-items:center;gap:18px;font-size:13px;}
+  .pill{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:6px 12px;
+    border-radius:20px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+  .dot.offline{background:var(--red);}
+ 
+  .expedition-toggle{
+    display:flex;align-items:center;gap:8px;
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:6px 12px;border-radius:20px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .switch{
+    width:36px;height:18px;background:#2c3e50;border-radius:20px;position:relative;transition:.3s;
+  }
+  .switch::after{
+    content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.3s;
+  }
+  .switch.on{background:var(--orange);}
+  .switch.on::after{left:20px;}
+ 
+  main{padding:22px 28px;max-width:1300px;margin:0 auto;}
+ 
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:16px;
+    margin-bottom:22px;
+  }
+  .stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px;
+    border-left:3px solid var(--teal);
+  }
+  .stat-card.alert{border-left-color:var(--orange);}
+  .stat-card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .stat-card .value{font-size:30px;font-weight:700;margin-top:6px;}
+  .stat-card .sub{font-size:12px;color:var(--muted);margin-top:4px;}
+ 
+  .grid{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:18px;
+  }
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+ 
+  .panel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:18px;
+  }
+  .panel h2{
+    font-size:14px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--teal);margin-bottom:14px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+ 
+  /* Antarctica map mock */
+  .map-wrap{
+    position:relative;
+    height:320px;
+    border-radius:8px;
+    overflow:hidden;
+    background:radial-gradient(ellipse at center, #1c3d52 0%, #0a1826 80%);
+    border:1px solid var(--border);
+  }
+  .map-wrap::before{
+    content:'';
+    position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 40px);
+  }
+  .continent{
+    position:absolute;
+    width:70%;height:70%;
+    top:15%;left:15%;
+    background:radial-gradient(ellipse at 40% 40%, #dfeffa 0%, #b8d4e3 55%, #7fa8c0 100%);
+    border-radius:48% 52% 55% 45% / 55% 45% 55% 45%;
+    opacity:.9;
+    filter:blur(.3px);
+  }
+  .dot-personnel{
+    position:absolute;
+    width:12px;height:12px;
+    border-radius:50%;
+    background:var(--teal);
+    box-shadow:0 0 0 4px rgba(0,180,198,.25);
+    cursor:pointer;
+    transform:translate(-50%,-50%);
+  }
+  .dot-personnel.field{background:var(--orange);box-shadow:0 0 0 4px rgba(255,107,53,.25);}
+  .dot-personnel.medical{background:var(--red);box-shadow:0 0 0 4px rgba(255,71,87,.25);animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .dot-label{
+    position:absolute;
+    font-size:10px;
+    background:rgba(13,27,42,.9);
+    padding:2px 6px;
+    border-radius:4px;
+    white-space:nowrap;
+    transform:translate(-50%, -140%);
+    pointer-events:none;
+    border:1px solid var(--border);
+  }
+  .station-label{
+    position:absolute;
+    font-size:11px;font-weight:700;
+    color:#0d1b2a;
+    transform:translate(-50%,-50%);
+  }
+ 
+  /* Personnel list */
+  .plist{list-style:none;}
+  .plist li{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;
+  }
+  .plist li:last-child{border-bottom:none;}
+  .status-badge{
+    font-size:10px;padding:3px 8px;border-radius:10px;letter-spacing:.5px;
+  }
+  .status-badge.active{background:rgba(46,213,115,.15);color:var(--green);}
+  .status-badge.field{background:rgba(255,107,53,.15);color:var(--orange);}
+  .status-badge.medical{background:rgba(255,71,87,.15);color:var(--red);}
+ 
+  /* Buttons */
+  .btn{
+    background:var(--teal-dim);
+    color:#fff;border:none;
+    padding:10px 18px;border-radius:6px;
+    font-size:13px;cursor:pointer;font-weight:600;
+    letter-spacing:.3px;
+    transition:.2s;
+  }
+  .btn:hover{background:var(--teal);}
+  .btn-outline{
+    background:transparent;border:1px solid var(--border);color:var(--ice);
+  }
+  .btn-outline:hover{border-color:var(--teal);}
+ 
+  /* SOS */
+  .sos-panel{text-align:center;}
+  .sos-btn{
+    width:120px;height:120px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff6b6b, var(--red) 70%);
+    border:4px solid rgba(255,71,87,.3);
+    color:#fff;font-weight:800;font-size:20px;letter-spacing:2px;
+    cursor:pointer;
+    box-shadow:0 0 0 0 rgba(255,71,87,.5);
+    animation:sosPulse 2s infinite;
+    margin:8px auto;
+  }
+  @keyframes sosPulse{
+    0%{box-shadow:0 0 0 0 rgba(255,71,87,.5);}
+    70%{box-shadow:0 0 0 22px rgba(255,71,87,0);}
+    100%{box-shadow:0 0 0 0 rgba(255,71,87,0);}
+  }
+  .sos-status{
+    margin-top:14px;font-size:13px;color:var(--muted);
+    min-height:20px;
+  }
+  .sos-status.queued{color:var(--orange);font-weight:600;}
+  .sos-status.sent{color:var(--green);font-weight:600;}
+ 
+  /* QR modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);
+    align-items:center;justify-content:center;z-index:100;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--card);border:1px solid var(--teal-dim);
+    border-radius:10px;padding:24px;width:360px;max-width:90%;
+  }
+  .modal h3{color:var(--teal);margin-bottom:14px;font-size:16px;}
+  .modal .timeline{list-style:none;margin:14px 0;}
+  .modal .timeline li{
+    padding:8px 0 8px 20px;border-left:2px solid var(--teal-dim);
+    position:relative;font-size:13px;color:var(--muted);
+  }
+  .modal .timeline li::before{
+    content:'';position:absolute;left:-6px;top:12px;width:10px;height:10px;
+    border-radius:50%;background:var(--border);
+  }
+  .modal .timeline li.done{color:var(--ice);}
+  .modal .timeline li.done::before{background:var(--green);}
+  .modal .timeline li.current::before{background:var(--orange);}
+  .modal .timeline li.current{color:var(--orange);font-weight:600;}
+  .modal-close{margin-top:10px;width:100%;}
+ 
+  /* Toast */
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--card);border:1px solid var(--teal);
+    padding:12px 22px;border-radius:8px;font-size:13px;
+    opacity:0;transition:.3s;pointer-events:none;z-index:200;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+ 
+  .footer-note{
+    text-align:center;color:var(--muted);font-size:11px;margin-top:20px;padding-bottom:20px;
+  }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="brand">
+    <span class="snowflake">🧊</span>
+    <div>
+      <h1>POLARIS</h1>
+      <div class="tag">NCPOR EXPEDITION COMMAND · 44th Antarctic Expedition</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="pill"><span class="dot" id="netDot"></span><span id="netLabel">Online</span></div>
+    <div class="pill">🔋 <span id="batteryLabel">100%</span></div>
+    <div class="expedition-toggle" onclick="toggleExpeditionMode()">
+      <span>Expedition Mode</span>
+      <div class="switch" id="expSwitch"></div>
+    </div>
+  </div>
+</header>
+ 
+<main>
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Personnel on Ice</div>
+      <div class="value">68</div>
+      <div class="sub">Maitri: 41 · Bharati: 27</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cargo in Transit</div>
+      <div class="value">214</div>
+      <div class="sub">QR-tracked items · 7-stage lifecycle</div>
+    </div>
+    <div class="stat-card alert">
+      <div class="label">Inventory Alerts</div>
+      <div class="value">3</div>
+      <div class="sub">Medical supply expires in 12 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Satellite Window</div>
+      <div class="value">4h 20m</div>
+      <div class="sub">Next uplink · 6 hrs from now</div>
+    </div>
+  </div>
+ 
+  <div class="grid">
+    <div>
+      <div class="panel">
+        <h2>Personnel Map — Live Position</h2>
+        <div class="map-wrap" id="mapWrap">
+          <div class="continent"></div>
+          <div id="mapDots"></div>
+        </div>
+      </div>
+ 
+      <div class="panel">
+        <h2>Cargo & Asset Tracking <button class="btn" onclick="openQr()">📷 Scan QR Code</button></h2>
+        <div style="font-size:13px;color:var(--muted);">
+          Tap "Scan QR Code" to simulate scanning a cargo item's tag and view its full chain-of-custody history — the exact fix for the 2017 lost-instrument incident.
+        </div>
+      </div>
+    </div>
+ 
+    <div>
+      <div class="panel sos-panel">
+        <h2 style="justify-content:center;">Emergency Response</h2>
+        <button class="sos-btn" onclick="triggerSOS()">SOS</button>
+        <div class="sos-status" id="sosStatus">Tap to simulate an emergency alert</div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-outline" onclick="toggleNetwork()">Simulate Internet OFF/ON</button>
+        </div>
+      </div>
+ 
+      <div class="panel">
+        <h2>Personnel Status</h2>
+        <ul class="plist" id="personnelList"></ul>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="footer-note">POLARIS — First polar logistics platform · Offline-first · Battery-optimized · Avinash & Team, MPGI Kanpur (AKTU) · SIH 2026</div>
+</main>
+ 
+<div class="modal-overlay" id="qrModal">
+  <div class="modal">
+    <h3>📦 Asset #POL-2291 — Seismograph Unit</h3>
+    <ul class="timeline">
+      <li class="done">Packed — Mumbai Warehouse, 18 Oct</li>
+      <li class="done">Port — Goa Port, 20 Oct</li>
+      <li class="done">Loaded — MV Vasco, 21 Oct</li>
+      <li class="current">At Sea — En route to Cape Town</li>
+      <li>Unloaded</li>
+      <li>Station — Maitri</li>
+      <li>In Use</li>
+    </ul>
+    <div style="font-size:12px;color:var(--muted);">Responsible officer: <strong style="color:var(--ice);">Dr. Sharma</strong></div>
+    <button class="btn modal-close" onclick="closeQr()">Close</button>
+  </div>
+</div>
+ 
+<div id="toast"></div>
+ 
+<script>
+// ---------- Fake data ----------
+const personnel = [
+  {name:"Dr. R. Sharma", role:"Glaciologist", status:"active", loc:"Maitri Station", x:38, y:42},
+  {name:"Cdr. A. Iyer", role:"Station Commander", status:"active", loc:"Maitri Station", x:34, y:48},
+  {name:"Dr. P. Nair", role:"Marine Biologist", status:"field", loc:"Field Mission — Ice Shelf", x:60, y:30},
+  {name:"S. Verma", role:"Field Officer", status:"field", loc:"Field Mission — Ice Shelf", x:63, y:33},
+  {name:"Dr. K. Rao", role:"Medical Officer", status:"medical", loc:"Bharati — Medical Bay", x:70, y:65},
+  {name:"M. Das", role:"Logistics Officer", status:"active", loc:"Bharati Station", x:74, y:70},
+];
+ 
+function renderMap(){
+  const wrap = document.getElementById('mapDots');
+  wrap.innerHTML = '';
+  personnel.forEach(p=>{
+    const dot = document.createElement('div');
+    dot.className = 'dot-personnel ' + (p.status==='field'?'field':p.status==='medical'?'medical':'');
+    dot.style.left = p.x + '%';
+    dot.style.top = p.y + '%';
+    dot.title = p.name;
+    dot.onclick = ()=> showToast(p.name + ' — ' + p.loc);
+    wrap.appendChild(dot);
+  });
+  // station labels
+  const maitri = document.createElement('div');
+  maitri.className='station-label';
+  maitri.style.left='34%'; maitri.style.top='40%';
+  maitri.textContent='⛺ Maitri';
+  wrap.appendChild(maitri);
+  const bharati = document.createElement('div');
+  bharati.className='station-label';
+  bharati.style.left='74%'; bharati.style.top='60%';
+  bharati.textContent='⛺ Bharati';
+  wrap.appendChild(bharati);
+}
+ 
+function renderList(){
+  const list = document.getElementById('personnelList');
+  list.innerHTML = '';
+  personnel.forEach(p=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${p.name}<br><small style="color:var(--muted)">${p.role}</small></span>
+      <span class="status-badge ${p.status}">${p.status.toUpperCase()}</span>`;
+    list.appendChild(li);
+  });
+}
+ 
+renderMap();
+renderList();
+ 
+// ---------- Toast ----------
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> t.classList.remove('show'), 2500);
+}
+ 
+// ---------- Network simulation ----------
+let isOnline = true;
+function toggleNetwork(){
+  isOnline = !isOnline;
+  const dot = document.getElementById('netDot');
+  const label = document.getElementById('netLabel');
+  if(isOnline){
+    dot.classList.remove('offline');
+    label.textContent = 'Online';
+    showToast('🌐 Satellite window open — connection restored');
+    flushQueuedSOS();
+  } else {
+    dot.classList.add('offline');
+    label.textContent = 'Offline';
+    showToast('📡 Connection lost — operating offline');
+  }
+}
+ 
+// ---------- SOS ----------
+let queuedSOS = false;
+function triggerSOS(){
+  const status = document.getElementById('sosStatus');
+  if(!isOnline){
+    queuedSOS = true;
+    status.textContent = '⚠ Queued Offline — will auto-send when satellite window opens';
+    status.className = 'sos-status queued';
+  } else {
+    status.textContent = '✅ Alert sent — NCPOR HQ, Ship Captain & Station Commander notified in <30 sec';
+    status.className = 'sos-status sent';
+  }
+}
+function flushQueuedSOS(){
+  if(queuedSOS){
+    queuedSOS = false;
+    setTimeout(()=>{
+      const status = document.getElementById('sosStatus');
+      status.textContent = '✅ Queued alert auto-sent — NCPOR HQ, Ship Captain & Station Commander notified';
+      status.className = 'sos-status sent';
+      showToast('🚨 SOS delivered — all parties notified');
+    }, 800);
+  }
+}
+ 
+// ---------- QR Modal ----------
+function openQr(){ document.getElementById('qrModal').classList.add('show'); }
+function closeQr(){ document.getElementById('qrModal').classList.remove('show'); }
+ 
+// ---------- Expedition Mode ----------
+let expOn = false;
+let battery = 100;
+function toggleExpeditionMode(){
+  expOn = !expOn;
+  document.body.classList.toggle('expedition-mode', expOn);
+  document.getElementById('expSwitch').classList.toggle('on', expOn);
+  battery = expOn ? 60 : 100;
+  document.getElementById('batteryLabel').textContent = battery + '%';
+  showToast(expOn ? '🌙 Expedition Mode ON — ~40% battery saved, GPS interval reduced' : '☀ Expedition Mode OFF — normal operation');
+}
+</script>
+</body>
+</html>
+ 
+
