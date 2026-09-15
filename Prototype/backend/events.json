@@ -1,0 +1,152 @@
+[
+  {
+    "eventId": "c42943ff-793d-4659-9d2a-646b9ba2963f",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "20L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T14:34:52.244Z",
+    "receivedAt": "2026-09-15T14:34:52.858Z"
+  },
+  {
+    "eventId": "fb6392cc-965c-473c-8dde-d0db19d2b493",
+    "type": "CHECKPOINT_REACHED",
+    "payload": {
+      "note": "3"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T14:35:26.643Z",
+    "receivedAt": "2026-09-15T14:35:39.062Z"
+  },
+  {
+    "eventId": "012c94f6-aafd-434b-b7b4-1a85e05323e0",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "50"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T15:01:29.284Z",
+    "receivedAt": "2026-09-15T15:01:29.296Z"
+  },
+  {
+    "eventId": "348e75ab-1021-4757-b3ea-e95a9b41e97e",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "30L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T15:01:46.131Z",
+    "receivedAt": "2026-09-15T15:01:46.144Z"
+  },
+  {
+    "eventId": "event-1789484809343-9lp16two",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "60L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T15:06:49.349Z",
+    "receivedAt": "2026-09-15T15:06:50.499Z"
+  },
+  {
+    "eventId": "event-1789484858511-rqda4bbu",
+    "type": "SOS",
+    "payload": {
+      "note": "All med out of stock, emergency case, need urgent"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T15:07:38.511Z",
+    "receivedAt": "2026-09-15T15:07:42.322Z"
+  },
+  {
+    "eventId": "event-1789488494552-3mlkb5ag",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "90L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:08:14.552Z",
+    "receivedAt": "2026-09-15T16:08:15.774Z"
+  },
+  {
+    "eventId": "event-1789488599470-84ix4mbh",
+    "type": "SOS",
+    "payload": {
+      "note": "NA"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:09:59.470Z",
+    "receivedAt": "2026-09-15T16:11:13.377Z"
+  },
+  {
+    "eventId": "event-1789488548443-i9ve1ox9",
+    "type": "CARGO_UPDATE",
+    "payload": {
+      "note": "Reached 5th check point"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:09:08.443Z",
+    "receivedAt": "2026-09-15T16:11:13.464Z"
+  },
+  {
+    "eventId": "event-1789488715216-msr73cgh",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "500L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:11:55.216Z",
+    "receivedAt": "2026-09-15T16:12:37.031Z"
+  },
+  {
+    "eventId": "b8a4d892-870f-4b82-ad2c-4115cdfff034",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": ""
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:32:45.708Z",
+    "receivedAt": "2026-09-15T16:35:40.009Z"
+  },
+  {
+    "eventId": "event-1789490956370-k3yf1ezj",
+    "type": "FUEL_CONSUMED",
+    "payload": {
+      "note": "20L"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:49:16.370Z",
+    "receivedAt": "2026-09-15T16:49:18.025Z"
+  },
+  {
+    "eventId": "event-1789490976313-v8ffvsg2",
+    "type": "SOS",
+    "payload": {
+      "note": "Emergency"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:49:36.313Z",
+    "receivedAt": "2026-09-15T16:49:40.372Z"
+  },
+  {
+    "eventId": "event-1789491030497-htfu54u5",
+    "type": "ASSET_DAMAGED",
+    "payload": {
+      "note": "Fuel tank leaked"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:50:30.497Z",
+    "receivedAt": "2026-09-15T16:50:46.823Z"
+  },
+  {
+    "eventId": "event-1789491301935-9ddl33sx",
+    "type": "CHECKPOINT_REACHED",
+    "payload": {
+      "note": "reached 1 checkpoint"
+    },
+    "deviceId": "field-device-demo",
+    "timestamp": "2026-09-15T16:55:01.935Z",
+    "receivedAt": "2026-09-15T16:55:06.023Z"
+  }
+]

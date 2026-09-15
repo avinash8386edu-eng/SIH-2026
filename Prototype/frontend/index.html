@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POLARIS — Field Device</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">POLARIS</span>
+      <span class="brand-sub">Field Device</span>
+    </div>
+    <div class="status-cluster">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Checking connection…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="panel">
+      <h2>Base Camp Server</h2>
+      <p class="hint">Set this to the laptop's LAN address, e.g. <code>http://192.168.1.14:3000</code></p>
+      <div class="row">
+        <input type="text" id="serverUrl" value="http://localhost:3000" spellcheck="false">
+        <button id="saveUrlBtn">Set</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Connection Mode</h2>
+      <p class="hint">This simulates walking out of camp Wi‑Fi range. Real connectivity is still checked underneath — this switch just forces the offline path so you can demo it on one device.</p>
+      <button id="modeToggleBtn" class="mode-btn">Switch to Offline Mode</button>
+    </section>
+
+    <section class="panel">
+      <h2>Report an Event</h2>
+      <div class="field-row">
+        <label for="eventType">Event type</label>
+        <select id="eventType">
+          <option value="FUEL_CONSUMED">Fuel Consumed</option>
+          <option value="CHECKPOINT_REACHED">Checkpoint Reached</option>
+          <option value="ASSET_DAMAGED">Asset Damaged</option>
+          <option value="CARGO_UPDATE">Cargo Status Update</option>
+          <option value="SOS">SOS — Emergency</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label for="eventNote">Details</label>
+        <input type="text" id="eventNote" placeholder="e.g. 20L used at checkpoint 3">
+      </div>
+      <button id="submitEventBtn" class="submit-btn">Log Event</button>
+    </section>
+
+    <section class="panel wide">
+      <div class="panel-header-row">
+        <h2>Event Queue</h2>
+        <span class="counts">
+          <span id="pendingCount">0</span> pending ·
+          <span id="syncedCount">0</span> synced
+        </span>
+      </div>
+      <ul id="eventList" class="event-list"></ul>
+    </section>
+
+    <section class="panel wide">
+      <h2>Activity Log</h2>
+      <div id="activityLog" class="activity-log"></div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
