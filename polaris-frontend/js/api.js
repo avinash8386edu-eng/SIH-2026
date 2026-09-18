@@ -39,3 +39,8 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         throw error;
     }
 }
+
+// For Jest testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { apiCall, API_BASE_URL };
+}
