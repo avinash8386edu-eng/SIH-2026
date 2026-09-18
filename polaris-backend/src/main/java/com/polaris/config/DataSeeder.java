@@ -25,130 +25,152 @@ public class DataSeeder implements CommandLineRunner {
         seedUsers();
         seedAssets();
         seedInventory();
-        System.out.println("???? POLARIS Demo Data Seeded Successfully!");
+        System.out.println("?? 43rd ISEA (Indian Scientific Expedition to Antarctica) Data Seeded Successfully!");
     }
 
     private void seedUsers() {
-        if (userRepository.findByEmail("admin@polaris.com").isEmpty()) {
+        if (userRepository.count() == 0) {
             User admin = User.builder()
-                    .name("NCPOR Admin")
+                    .name("Denney George (VU2DGR)")
                     .email("admin@polaris.com")
                     .passwordHash(passwordEncoder.encode("admin123"))
                     .role(Role.ADMIN)
-                    .expeditionId(44L)
+                    .expeditionId(43L)
                     .currentStatus("ACTIVE")
                     .build();
-            userRepository.save(admin);
-        }
 
-        if (userRepository.findByEmail("commander@polaris.com").isEmpty()) {
             User commander = User.builder()
-                    .name("Station Commander")
+                    .name("Subrata Moulik (Maitri)")
                     .email("commander@polaris.com")
                     .passwordHash(passwordEncoder.encode("commander123"))
                     .role(Role.COMMANDER)
-                    .expeditionId(44L)
+                    .expeditionId(43L)
                     .currentStatus("ACTIVE")
                     .build();
-            userRepository.save(commander);
-        }
 
-        if (userRepository.findByEmail("scientist1@polaris.com").isEmpty()) {
             User scientist1 = User.builder()
-                    .name("Dr. Arvind (Field Team)")
+                    .name("Dr. Yogesh Ray (Expedition Leader)")
                     .email("scientist1@polaris.com")
                     .passwordHash(passwordEncoder.encode("sci123"))
                     .role(Role.SCIENTIST)
-                    .expeditionId(44L)
+                    .expeditionId(43L)
                     .currentStatus("ON_TRAVERSE")
-                    .lastLatitude(-75.250973)
-                    .lastLongitude(106.237096)
+                    .lastLatitude(-70.7661) // Maitri Area
+                    .lastLongitude(11.7322)
                     .build();
-            userRepository.save(scientist1);
-        }
 
-        if (userRepository.findByEmail("scientist2@polaris.com").isEmpty()) {
             User scientist2 = User.builder()
-                    .name("Dr. Meera (Ice Core)")
+                    .name("Showmitra Chowdhury (CSC)")
                     .email("scientist2@polaris.com")
                     .passwordHash(passwordEncoder.encode("sci123"))
                     .role(Role.SCIENTIST)
-                    .expeditionId(44L)
+                    .expeditionId(43L)
                     .currentStatus("ON_TRAVERSE")
-                    .lastLatitude(-75.300000)
-                    .lastLongitude(106.100000)
+                    .lastLatitude(-69.4069) // Bharati Area
+                    .lastLongitude(76.1953)
                     .build();
-            userRepository.save(scientist2);
+
+            userRepository.saveAll(List.of(admin, commander, scientist1, scientist2));
         }
     }
 
     private void seedAssets() {
-        if (assetRepository.findByQrCode("POL-SCI-001").isEmpty()) {
+        if (assetRepository.count() == 0) {
             Asset asset1 = Asset.builder()
                     .qrCode("POL-SCI-001")
-                    .name("Seismometer Alpha")
+                    .name("Milli-Q Ultra Water System")
                     .category(AssetCategory.SCIENTIFIC)
                     .status(AssetStatus.AT_STATION)
-                    .currentLocation("Bharati Station")
-                    .expeditionId(44L)
+                    .currentLocation("Bharati Modular Lab")
+                    .expeditionId(43L)
                     .isCritical(true)
                     .lastScannedAt(LocalDateTime.now().minusHours(2))
                     .build();
-            assetRepository.save(asset1);
-        }
 
-        if (assetRepository.findByQrCode("POL-MED-002").isEmpty()) {
             Asset asset2 = Asset.builder()
                     .qrCode("POL-MED-002")
-                    .name("Emergency Trauma Kit")
+                    .name("Advanced Frostbite & Necrosis Kit")
                     .category(AssetCategory.MEDICAL)
                     .status(AssetStatus.ON_VESSEL)
-                    .currentLocation("MV Ivan Papanin")
-                    .expeditionId(44L)
+                    .currentLocation("MV Vasiliy Golovnin")
+                    .expeditionId(43L)
                     .isCritical(true)
                     .lastScannedAt(LocalDateTime.now().minusDays(1))
                     .build();
-            assetRepository.save(asset2);
+
+            Asset asset3 = Asset.builder()
+                    .qrCode("AST_001")
+                    .name("Kamov Ka-32 Helicopter")
+                    .category(AssetCategory.VEHICLE)
+                    .status(AssetStatus.ON_VESSEL)
+                    .currentLocation("India Bay Ice Shelf")
+                    .expeditionId(43L)
+                    .isCritical(true)
+                    .lastScannedAt(LocalDateTime.now().minusHours(5))
+                    .build();
+                    
+            Asset asset4 = Asset.builder()
+                    .qrCode("AST_003")
+                    .name("PistenBully Polar 300 Tracked Vehicle")
+                    .category(AssetCategory.VEHICLE)
+                    .status(AssetStatus.AT_STATION)
+                    .currentLocation("Maitri Station")
+                    .expeditionId(43L)
+                    .isCritical(true)
+                    .lastScannedAt(LocalDateTime.now().minusMinutes(30))
+                    .build();
+
+            assetRepository.saveAll(List.of(asset1, asset2, asset3, asset4));
         }
     }
 
     private void seedInventory() {
         if (inventoryRepository.count() == 0) {
-            Inventory food = Inventory.builder()
-                    .itemName("MRE Winter Ration Packs")
-                    .category(InventoryCategory.FOOD)
+            Inventory fuel1 = Inventory.builder()
+                    .itemName("Aviation Turbine Fuel (ATF)")
+                    .category(InventoryCategory.FUEL)
                     .quantity(500.0)
-                    .unit("Boxes")
+                    .unit("Barrels")
                     .minimumThreshold(100.0)
-                    .expiryDate(LocalDate.now().plusMonths(6))
-                    .storageLocation("Warehouse B")
-                    .expeditionId(44L)
+                    .expiryDate(LocalDate.now().plusYears(2))
+                    .storageLocation("Maitri Fuel Dump")
+                    .expeditionId(43L)
                     .build();
 
-            Inventory fuel = Inventory.builder()
-                    .itemName("Winter Diesel (ATF)")
+            Inventory fuel2 = Inventory.builder()
+                    .itemName("High-Speed Diesel (HSD)")
                     .category(InventoryCategory.FUEL)
-                    .quantity(15000.0)
+                    .quantity(350000.0)
                     .unit("Liters")
-                    .minimumThreshold(5000.0)
+                    .minimumThreshold(50000.0)
                     .expiryDate(LocalDate.now().plusYears(1))
-                    .storageLocation("Fuel Dump 1")
-                    .expeditionId(44L)
+                    .storageLocation("Bharati Generator Tanks")
+                    .expeditionId(43L)
                     .build();
             
-            Inventory expiringMed = Inventory.builder()
-                    .itemName("Amoxicillin Antibiotics")
-                    .category(InventoryCategory.MEDICAL)
-                    .quantity(50.0)
-                    .unit("Packs")
-                    .minimumThreshold(100.0) // Below threshold!
-                    .expiryDate(LocalDate.now().plusDays(10)) // Expiring soon!
-                    .storageLocation("Medical Bay")
-                    .expeditionId(44L)
+            Inventory food = Inventory.builder()
+                    .itemName("DFRL MRE: Vegetable Pulav")
+                    .category(InventoryCategory.FOOD)
+                    .quantity(1200.0)
+                    .unit("Pouches")
+                    .minimumThreshold(300.0)
+                    .expiryDate(LocalDate.now().plusMonths(12))
+                    .storageLocation("Maitri Pantry")
+                    .expeditionId(43L)
                     .build();
 
-            inventoryRepository.saveAll(List.of(food, fuel, expiringMed));
+            Inventory expiringMed = Inventory.builder()
+                    .itemName("Broad-Spectrum Antibiotics")
+                    .category(InventoryCategory.MEDICAL)
+                    .quantity(15.0)
+                    .unit("Courses")
+                    .minimumThreshold(50.0) // Below threshold!
+                    .expiryDate(LocalDate.now().plusDays(8)) // Expiring soon!
+                    .storageLocation("Bharati Medical Bay")
+                    .expeditionId(43L)
+                    .build();
+
+            inventoryRepository.saveAll(List.of(fuel1, fuel2, food, expiringMed));
         }
     }
 }
-

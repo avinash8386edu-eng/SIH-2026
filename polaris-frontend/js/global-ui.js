@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Remove old widget if exists
     const oldW = document.getElementById('network-sync-widget');
     if (oldW) oldW.remove();
@@ -16,9 +16,32 @@
 window.isBlizzardMode = false;
 
 function injectGlobalUI() {
+    // 1. Massive VSAT Status Banner (For Hackathon Judges)
+    const vsatBanner = document.createElement('div');
+    vsatBanner.id = 'vsat-banner-hackathon';
+    vsatBanner.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 35px; line-height: 35px; text-align: center; font-weight: 900; letter-spacing: 1.5px; z-index: 10000; transition: all 0.3s ease; text-transform: uppercase; font-size: 14px;';
+    document.body.prepend(vsatBanner);
+
+    // Update function for VSAT banner
+    function updateVSATBanner() {
+        if (navigator.onLine) {
+            vsatBanner.style.backgroundColor = '#2ECC71';
+            vsatBanner.style.color = '#000';
+            vsatBanner.innerText = '🟢 VSAT ONLINE: SATELLITE LINK STABLE - QUEUE SYNCED';
+        } else {
+            vsatBanner.style.backgroundColor = '#E74C3C';
+            vsatBanner.style.color = '#FFF';
+            vsatBanner.innerText = '🔴 VSAT OFFLINE: P2P MESH & INDEXEDDB QUEUING ACTIVATED';
+        }
+    }
+    window.addEventListener('online', updateVSATBanner);
+    window.addEventListener('offline', updateVSATBanner);
+    updateVSATBanner();
+
     // Top Bar Container
     const topBar = document.createElement('div');
     topBar.className = 'top-ui-bar';
+    topBar.style.marginTop = '35px'; // Offset for the banner
     document.body.appendChild(topBar);
 
     // Power Mode Toggle

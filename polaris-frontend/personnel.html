@@ -37,21 +37,21 @@
 
         <div class="main-content">
             <div style="display:flex; justify-content:space-between;">
-                <h2 style="color: #00E5FF;">🛰️ ISRO Live Radar & Personnel Status</h2>
-                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">📊 Export Ministry Excel Report</button>
+                <h2 style="color: #00E5FF;">??????? ISRO Live Radar & Personnel Status</h2>
+                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">???? Export Ministry Excel Report</button>
             </div>
             
             <div class="dashboard-grid">
                 <div class="stat-card" style="border-left-color:#F1C40F;">
-                    <h4>🚜 On Traverse (Active)</h4>
+                    <h4>???? On Traverse (Active)</h4>
                     <h2 id="traverseCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#E67E22;">
-                    <h4>🩺 Quarantine / Acclimatization</h4>
+                    <h4>???? Quarantine / Acclimatization</h4>
                     <h2 id="quarantineCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#3498DB;">
-                    <h4>🚢 Transit (On Vessel)</h4>
+                    <h4>???? Transit (On Vessel)</h4>
                     <h2 id="vesselCount">0</h2>
                 </div>
             </div>
@@ -61,12 +61,12 @@
                 
                 <!-- Live Blizzard Prediction Widget -->
                 <div class="weather-panel">
-                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">☁️ NRSC Weather</h3>
-                    <p style="margin:5px 0;"><strong>Temp:</strong> -42°C (Feels -55°C)</p>
+                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">?????? NRSC Weather</h3>
+                    <p style="margin:5px 0;"><strong>Temp:</strong> -42??C (Feels -55??C)</p>
                     <p style="margin:5px 0;"><strong>Wind:</strong> 110 km/h (Katabatic)</p>
                     <p style="margin:5px 0;"><strong>Visibility:</strong> 200m</p>
                     <hr style="border-color:#555;">
-                    <p class="blizzard-warn">⚠️ BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
+                    <p class="blizzard-warn">?????? BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
                 </div>
             </div>
 
@@ -79,8 +79,9 @@
                             <th>Status (Location)</th>
                             <th>Purpose / Task</th>
                             <th>Vehicle</th>
+                            <th>Live Telemetry (SpO2/BPM)</th>
                             <th>Expected Return (ETA)</th>
-                            <th>Auto-SOS Action</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="personnelTableBody">
@@ -91,23 +92,58 @@
     </div>
 
     <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/advanced-sos.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let map; let markers = {};
-
+        let map, traverseMarker;
+        
         function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([-70.0, 44.0], 4); 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
-            L.circle([-70.7667, 11.7333], { color: '#00E5FF', fillOpacity: 0.1, radius: 50000 }).addTo(map);
-            L.circle([-69.4068, 76.1933], { color: '#00E5FF', fillOpacity: 0.1, radius: 50000 }).addTo(map);
+            map = L.map('radar-map').setView([-70.7661, 11.7322], 6); // Maitri View
             
-            // Maitri & Bharati
-            L.marker([-70.7667, 11.7333], { icon: L.divIcon({ className: 'base-station', html: '🇮🇳 MAITRI', iconSize: [80, 25] }) }).addTo(map);
-            L.marker([-69.4068, 76.1933], { icon: L.divIcon({ className: 'base-station', html: '🇮🇳 BHARATI', iconSize: [80, 25] }) }).addTo(map);
+            // ISRO / NRSC Dark Theme TileLayer
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; POLARIS Radar Systems (Mock)',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add Maitri and Bharati Station Markers
+            L.marker([-70.7661, 11.7322]).addTo(map).bindPopup("<b>Maitri Station (HQ)</b>");
+            L.marker([-69.4069, 76.1953]).addTo(map).bindPopup("<b>Bharati Station</b>");
+
+            // Add 50km Geofence Safe Zone
+            L.circle([-70.7661, 11.7322], {
+                color: '#2ECC71',
+                fillColor: '#2ECC71',
+                fillOpacity: 0.1,
+                radius: 50000
+            }).addTo(map).bindPopup("50km Safe Perimeter");
+
+            // Add Crevasse Danger Zone
+            L.polygon([
+                [-71.0, 11.0],
+                [-71.5, 12.0],
+                [-71.2, 13.0]
+            ], {
+                color: '#E74C3C',
+                fillColor: '#E74C3C',
+                fillOpacity: 0.2
+            }).addTo(map).bindPopup("CRITICAL: Crevasse Hazard Zone");
+        }
+
+        function getDynamicStatus(id, name) {
+            // Mock logic to simulate various states
+            if (name.includes("Yogesh")) {
+                return { status: 'TRAVERSE', label: 'On Ice Shelf', color: '#F39C12', purpose: 'Geological Core Extraction', vehicle: 'PistenBully 300', etaTimestamp: Date.now() - 600000, etaLabel: '10 Mins Ago' };
+            } else if (name.includes("Showmitra")) {
+                return { status: 'QUARANTINE', label: 'In Quarantine', color: '#8E44AD', purpose: 'Pre-Deployment Acclimatization', vehicle: 'Station Bay 4', etaTimestamp: null, etaLabel: null };
+            } else {
+                return { status: 'VESSEL', label: 'On Vessel', color: '#3498DB', purpose: 'Logistics Offloading', vehicle: 'MV Vasiliy Golovnin', etaTimestamp: null, etaLabel: null };
+            }
         }
 
         async function loadPersonnel() {
@@ -136,39 +172,40 @@
                         const etaTime = new Date(statusObj.etaTimestamp);
                         if (Date.now() > etaTime.getTime()) {
                             etaStyle = 'color:#E74C3C; font-weight:bold; animation: blink 1s infinite;';
-                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">🚨 TRIGGER AUTO-SOS</button>`;
-                            
-                            // Auto-trigger if not acknowledged (simulate)
-                            if(!localStorage.getItem('auto_sos_' + p.id)) {
-                                alert(`CRITICAL AUTO-SOS:\n\n${p.name} has missed their Expected Return Time (${statusObj.etaLabel}) due to upcoming Blizzard.\nStation Commander has been notified immediately!`);
-                                localStorage.setItem('auto_sos_' + p.id, 'triggered');
-                            }
+                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">???? TRIGGER AUTO-SOS</button>`;
                         } else {
                             actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
                         }
                     }
 
+                    // Mock Vitals Logic
+                    let baseHr = 75 + Math.floor(Math.random()*15);
+                    let baseSp = 95 + Math.floor(Math.random()*5);
+                    let baseTemp = (36.5 + (Math.random()*0.5)).toFixed(1);
+                    
+                    let vitalsHtml = `<span id="vital-hr-${p.id}">?????? ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">???? ${baseSp}%</span> | ??????? ${baseTemp}??C`;
+
                     tbody.innerHTML += `
-                        <tr>
+                        <tr id="row-user-${p.id}">
                             <td>${p.name}</td>
                             <td><span class="badge" style="background:${statusObj.color};">${statusObj.label}</span></td>
                             <td>${statusObj.purpose}</td>
                             <td>${statusObj.vehicle}</td>
+                            <td style="font-family:monospace; font-size:13px;">${vitalsHtml}</td>
                             <td style="${etaStyle}">${statusObj.etaLabel || 'N/A'}</td>
-                            <td>${actionBtn}</td>
+                            <td>
+                                ${actionBtn}
+                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">?????? Sim Vitals</button>
+                            </td>
                         </tr>
                     `;
 
                     // Map Plotting for Traverse
                     if(statusObj.status === 'TRAVERSE' && p.lastLatitude) {
-                        const icon = L.divIcon({
-                            className: 'pulse-marker',
-                            html: `<div class="pulse-dot" style="color:${statusObj.color}; background:${statusObj.color};"></div>
-                                   <div class="vehicle-icon">${p.assignedVehicle === 'Kamov Helicopter' ? '🚁' : '🚜'}</div>`,
-                            iconSize: [16, 16], iconAnchor: [8, 8]
-                        });
-                        L.marker([p.lastLatitude, p.lastLongitude], {icon: icon}).addTo(map)
-                            .bindPopup(`<b>${p.name}</b><br>${statusObj.purpose}<br>ETA: ${statusObj.eta}`);
+                        const icon = L.divIcon({ className: 'radar-marker' });
+                        if(traverseMarker) map.removeLayer(traverseMarker);
+                        traverseMarker = L.marker([p.lastLatitude, p.lastLongitude], {icon}).addTo(map)
+                            .bindPopup(`<b>${p.name}</b><br>Vehicle: ${statusObj.vehicle}<br>Speed: 15 km/h`);
                     }
                 });
 
@@ -179,19 +216,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // Logic to simulate distinct Antarctic states
-        function getDynamicStatus(id, name) {
-            const now = new Date();
-            if (id % 3 === 0) { // Quarantine
-                return { status: 'QUARANTINE', label: 'Quarantine (Day 4/7)', color: '#E67E22', purpose: 'Acclimatization & Medical Check', vehicle: 'Base Facility', etaTimestamp: null, etaLabel: null };
-            } else if (id % 3 === 1) { // Vessel
-                return { status: 'VESSEL', label: 'On Ship (Transit)', color: '#3498DB', purpose: 'Logistics Transport', vehicle: 'MV Vasiliy Golovnin', etaTimestamp: null, etaLabel: null };
-            } else { // Traverse
-                // Make ETA 5 minutes ago to trigger AUTO-SOS
-                let eta = new Date(now.getTime() - 5 * 60000); 
-                return { status: 'TRAVERSE', label: 'On Traverse', color: '#F1C40F', purpose: 'Ice Core Drilling', vehicle: 'PistenBully', etaTimestamp: eta.toISOString(), etaLabel: eta.toLocaleTimeString() };
-            }
-        }
+                
 
         function triggerAutoSOS(name) {
             alert(`Manual Override: Sent high-priority distress signal to ${name}'s vehicle and Base Commander!`);
@@ -209,3 +234,4 @@
     </script>
 </body>
 </html>
+
