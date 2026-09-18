@@ -75,6 +75,8 @@
                     <button type="submit" class="btn btn-primary">Save Item</button>
                 </form>
             </div>
+            
+            <div id="fifoAlertsContainer" style="margin-bottom: 20px;"></div>
 
             <div class="card">
                 <h3>Stock List</h3>
@@ -98,6 +100,8 @@
 
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script>
         function toggleForm() {
             const form = document.getElementById('addForm');
@@ -179,6 +183,21 @@
         }
 
         loadInventory();
+
+        // Connect WebSocket for Live Inventory Alerts
+        const socket = new SockJS('http://localhost:8080/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected to FIFO Alert System: ' + frame);
+            stompClient.subscribe('/topic/inventory-alerts', function (alertMsg) {
+                const container = document.getElementById('fifoAlertsContainer');
+                container.innerHTML += `
+                    <div style="background: #C0392B; color: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border-left: 5px solid #F1C40F;">
+                        ⚠️ ${alertMsg.body}
+                    </div>
+                `;
+            });
+        });
     </script>
 </body>
 </html>

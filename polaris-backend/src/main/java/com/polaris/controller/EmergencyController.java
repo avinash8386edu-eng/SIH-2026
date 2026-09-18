@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.polaris.service.SmsService;
+
 @RestController
 @RequestMapping("/api/emergency")
 @RequiredArgsConstructor
@@ -17,6 +19,7 @@ public class EmergencyController {
 
     private final EmergencyRepository emergencyRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final SmsService smsService;
 
     @GetMapping
     public ResponseEntity<List<Emergency>> getAllEmergencies() {
@@ -30,6 +33,12 @@ public class EmergencyController {
         
         // Broadcast via WebSocket
         messagingTemplate.convertAndSend("/topic/sos", savedEmergency);
+        
+        // Trigger Satellite SMS for ultimate resilience
+        smsService.broadcastSatelliteSOS(
+            "SOS [" + savedEmergency.getType() + "]: " + savedEmergency.getDescription(), 
+            savedEmergency.getLatitude() + ", " + savedEmergency.getLongitude()
+        );
         
         return ResponseEntity.ok(savedEmergency);
     }
