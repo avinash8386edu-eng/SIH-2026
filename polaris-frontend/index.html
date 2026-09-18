@@ -15,17 +15,22 @@
         <p>Indian Antarctic Expedition Management</p>
         
         <div class="card">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="Enter email">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Enter password">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">LOGIN</button>
-            </form>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="color: #2ECC71;">DEMO MODE: QUICK LOGIN</h3>
+                <p style="color: #BDC3C7; font-size: 14px;">Select a role to instantly log in without passwords.</p>
+            </div>
+            
+            <button onclick="login('commander@polaris.com', 'commander123')" class="btn btn-primary" style="width: 100%; margin-bottom: 15px; font-size: 16px; padding: 15px;">
+                👮 Log in as <strong>Commander</strong> (Full Access)
+            </button>
+            
+            <button onclick="login('admin@polaris.com', 'admin123')" class="btn btn-warning" style="width: 100%; margin-bottom: 15px; font-size: 16px; padding: 15px; color: #fff;">
+                📦 Log in as <strong>Logistics Officer</strong> (Cargo)
+            </button>
+
+            <button onclick="login('scientist1@polaris.com', 'sci123')" class="btn btn-danger" style="width: 100%; margin-bottom: 15px; font-size: 16px; padding: 15px;">
+                🔬 Log in as <strong>Field Scientist</strong> (Field Ops)
+            </button>
         </div>
     </div>
 
