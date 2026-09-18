@@ -26,7 +26,11 @@ async function apiCall(endpoint, method = 'GET', data = null) {
             if (response.status === 401 || response.status === 403) {
                 // Unauthorized, clear token and redirect to login
                 localStorage.removeItem('jwt');
-                window.location.href = 'index.html';
+                if (typeof window.location.assign === 'function') {
+                    window.location.assign('index.html');
+                } else {
+                    window.location.href = 'index.html';
+                }
             }
             throw new Error(`API Error: ${response.status}`);
         }
