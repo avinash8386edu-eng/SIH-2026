@@ -18,7 +18,7 @@
             <a href="cargo.html">Cargo & Assets</a>
             <a href="inventory.html">Inventory</a>
             <a href="personnel.html">Personnel Tracker</a>
-            <a href="emergency.html">Emergency / SOS</a>
+            <a href="fuel.html">Fuel & AI Monitoring</a>`n            <a href="emergency.html">Emergency / SOS</a>
             <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid #ffffff22;">Logout</a>
         </div>
 
@@ -45,9 +45,23 @@
                 </div>
             </div>
             
-            <div class="card">
-                <h3>System Status</h3>
-                <p>Welcome to POLARIS Command Center. All systems operational.</p>
+                        <div class="card" style="margin-top:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Expedition Planning & Logistics Timeline (ISEA-44)</h3>
+                    <span class="badge badge-success">ON SCHEDULE</span>
+                </div>
+                <div style="margin-top: 15px; position:relative;">
+                    <!-- Simple CSS Gantt Chart -->
+                    <div style="display:flex; height:30px; background:#1B4F72; border-radius:4px; overflow:hidden;">
+                        <div style="width:20%; background:#2ECC71; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">Phase 1: Loading (Goa)</div>
+                        <div style="width:30%; background:#F39C12; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; border-left:2px solid #000;">Phase 2: Vessel Transit</div>
+                        <div style="width:15%; background:#E74C3C; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; border-left:2px solid #000;">Phase 3: Ice Unloading</div>
+                        <div style="width:35%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:12px; border-left:2px solid #000;">Phase 4: Station Handover</div>
+                    </div>
+                    <!-- Progress Marker -->
+                    <div style="position:absolute; top:-5px; left:45%; width:4px; height:40px; background:#fff; box-shadow:0 0 10px #fff;"></div>
+                    <div style="position:absolute; top:35px; left:41%; font-size:12px; color:#fff;">? TODAY (Transit)</div>
+                </div>
             </div>
         </div>
     </div>
@@ -113,5 +127,7 @@
     </script>
 </body>
 </html>
+
+
 
 

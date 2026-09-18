@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Fuel & Energy Monitoring</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="cargo.html">Cargo & Assets</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html">Personnel Tracker</a>
+            <a href="fuel.html" class="active">Fuel & AI Monitoring</a>
+            <a href="emergency.html">Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+        </div>
+
+        <div class="main-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2>Aviation Turbine Fuel (ATF) & Energy Telemetry</h2>
+                <div class="badge badge-warning" style="font-size: 16px; padding: 10px;">
+                    AI Predictive Engine: <span id="aiStatus" style="color:#2ECC71;">ONLINE</span>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="card stat-card" style="border-color: #F39C12;">
+                    <h4>Total Winter Diesel (Bharati)</h4>
+                    <h3 id="stat-total-fuel" style="color: #F39C12;">15,000 L</h3>
+                </div>
+                <div class="card stat-card" style="border-color: #E74C3C;">
+                    <h4>Current Burn Rate</h4>
+                    <h3 id="stat-burn-rate" style="color: #E74C3C;">245 L/day</h3>
+                </div>
+                <div class="card stat-card" style="border-color: #85C1E9;">
+                    <h4>Generator Efficiency</h4>
+                    <h3 id="stat-efficiency" style="color: #85C1E9;">94.2%</h3>
+                </div>
+                <div class="card stat-card" style="border-color: #2ECC71;">
+                    <h4>AI Est. Depletion</h4>
+                    <h3 id="stat-depletion" style="color: #2ECC71;">61 Days</h3>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>7-Day Consumption vs AI Forecast</h3>
+                <canvas id="fuelChart" height="80"></canvas>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #E74C3C;">⚠️ ML Anomaly Detection Alerts</h3>
+                <table style="width:100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #1B4F72;">
+                        <th style="padding:10px; text-align:left;">Timestamp</th>
+                        <th style="padding:10px; text-align:left;">Subsystem</th>
+                        <th style="padding:10px; text-align:left;">Anomaly Profile</th>
+                        <th style="padding:10px; text-align:left;">AI Recommendation</th>
+                    </tr>
+                    <tr style="background: rgba(231,76,60,0.1);">
+                        <td style="padding:10px;">Today, 08:14z</td>
+                        <td style="padding:10px;">Generator #2 (Maitri)</td>
+                        <td style="padding:10px;">Sudden 14% efficiency drop (Viscosity issue detected)</td>
+                        <td style="padding:10px;">Engage line heaters immediately</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;">Yesterday, 14:22z</td>
+                        <td style="padding:10px;">Traverse Convoy Alpha</td>
+                        <td style="padding:10px;">Burn rate exceeding forecast by 8%</td>
+                        <td style="padding:10px;">Route optimization suggested (Heavy sastrugi detected)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('fuelChart').getContext('2d');
+            
+            // Generate some realistic fake data for the AI forecast
+            const dates = ['Day -6', 'Day -5', 'Day -4', 'Day -3', 'Day -2', 'Yesterday', 'Today', 'Tomorrow (AI)', 'Day +2 (AI)'];
+            const actualBurn = [210, 215, 205, 230, 240, 245, 242, null, null];
+            const aiForecast = [200, 210, 210, 220, 235, 240, 245, 260, 280]; // Spikes due to incoming blizzard
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Actual Burn Rate (L/day)',
+                            data: actualBurn,
+                            borderColor: '#E74C3C',
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'AI Forecasted Burn Rate',
+                            data: aiForecast,
+                            borderColor: '#85C1E9',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e0' } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: '#1B4F72' },
+                            ticks: { color: '#e0e0e0' }
+                        },
+                        x: {
+                            grid: { color: '#1B4F72' },
+                            ticks: { color: '#e0e0e0' }
+                        }
+                    }
+                }
+            });
+
+            // Simulate real-time telemetry fluctuations
+            setInterval(() => {
+                const efficiency = (94.2 + (Math.random() * 0.4 - 0.2)).toFixed(1);
+                document.getElementById('stat-efficiency').innerText = efficiency + '%';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
