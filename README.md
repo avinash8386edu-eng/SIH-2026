@@ -2,14 +2,14 @@
   <img src="https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/Smart_India_Hackathon_logo.png/220px-Smart_India_Hackathon_logo.png" alt="SIH Logo" width="150" />
   <h1>POLARIS (Heem Setu) ????</h1>
   <p><strong>Integrated Polar Expedition Logistics and Asset Management System</strong></p>
-  <p><em>Smart India Hackathon (SIH) 2026 Submission � Problem Statement ID: 26062</em></p>
+  <p><em>Smart India Hackathon (SIH) 2026 Submission • Problem Statement ID: 26062</em></p>
   <p><b>Organization:</b> Ministry of Earth Sciences (MoES) | <b>Department:</b> NCPOR</p>
 </div>
 
 ---
 
 ## ??? The Problem: Extreme Operational Isolation
-Managing research expeditions at **Maitri** and **Bharati** stations in Antarctica presents extreme challenges. During the 8-month winter isolation period (March to November), no resupply flights or ships can reach Antarctica. Station commanders must manage dwindling fuel reserves, intermittent 1.5 Mbps satellite connections, and field scientists enduring -60�C temperatures where mobile lithium-ion batteries degrade in minutes. 
+Managing research expeditions at **Maitri** and **Bharati** stations in Antarctica presents extreme challenges. During the 8-month winter isolation period (March to November), no resupply flights or ships can reach Antarctica. Station commanders must manage dwindling fuel reserves, intermittent 1.5 Mbps satellite connections, and field scientists enduring -60°C temperatures where mobile lithium-ion batteries degrade in minutes. 
 
 Existing solutions fail because they rely on heavy frontend architectures (e.g., React/Angular) and continuous cloud ML connections that instantly break during a polar blizzard communication blackout.
 
@@ -32,22 +32,29 @@ When a scientist is caught in a blizzard with zero network:
 Instead of relying on cloud-based Python microservices which fail offline, POLARIS features an edge-computed AI Fuel Telemetry Dashboard. 
 We calculate the **Effective Burn Rate Autonomy** directly using environmental telemetry:
 
-Fuel Depletion Threshold = Current Stock / (Base Burn Rate � Heat Demand Multiplier)
+Fuel Depletion Threshold = Current Stock / (Base Burn Rate × Heat Demand Multiplier)
 
 The dashboard dynamically forecasts **Aviation Turbine Fuel (ATF)** consumption spikes ahead of incoming blizzards, preventing catastrophic generator starvation without needing a remote cloud connection.
 
-### ?? 4. ?? Cryptographic QR Cargo Tracking (Cold-Chain)
-A built-in HTML5 camera scanner tracks high-value assets (e.g., Ice Core drills, Seismometers) as they transition through a rigorous multi-stage pipeline:
-*Vessel (MV Ivan Papanin) ? Fast-Ice Mooring ? Station Helipad ? Station Receiving Bay*
+### 🗄️ 4. AL-1403 Automated Cargo Manifest Engine
+The Indian expedition requires rigorous tracking of cargo via **AL-1403** compliance forms. POLARIS eliminates manual paperwork bottlenecks with a 1-click **Export AL-1403 Manifest (PDF)** engine. It generates an official, printable Government of India document dynamically populated with live cargo state and cryptographic QR routing.
 
-### ?? 5. ??? CartoDB Dark Matter GIS (Radar Mapping)
-We utilize a highly optimized Leaflet.js engine mapped with **CartoDB Dark Matter** tiles. This provides commanders with a high-contrast, military-radar-style map of Antarctica for plotting field scientists' exact GPS coordinates, without blinding them in dark command centers.
+### ⏱️ 5. Automated FIFO & Expiry Cron Service
+A background Spring Boot `@Scheduled` Cron job continually scans the MySQL inventory database for food and medical supplies nearing expiration. If an imminent expiry is detected, it immediately bypasses standard polling and pushes a real-time **WebSocket Alert Banner** to the frontend, enforcing First-In-First-Out (FIFO) consumption protocols.
 
-### ?? 6. ??? Java Spring Boot 100% Crash-Proof API
+### 🧤 6. Thick-Glove Mobile Ergonomics
+We optimized the UI specifically for scientists wearing thick, insulated polar mittens. Standard web buttons have been replaced with massive, screen-sized touch targets (e.g., the full-screen 🚨 SOS 🚨 trigger) ensuring zero misclicks in -60°C conditions.
+
+### 🧪 7. 100% Enterprise Test Coverage (TDD)
+We didn't just build a prototype; we built an enterprise-grade platform. The repository includes comprehensive, automated QA suites:
+- **Backend (JUnit 5 + MockMvc):** Validates JWT Auth, HTTP 401/403 boundaries, WebSocket broadcast intercepts, and simulated Iridium Satellite SMS transmissions.
+- **Frontend (Jest + JSDOM):** Fully mocks the browser `fetch` API and simulates `navigator.onLine = false` network drops to independently verify the IndexedDB/localStorage offline queuing logic.
+
+### ⚙️ 8. Java Spring Boot 100% Crash-Proof API
 The backend is powered by a heavily multi-threaded **Java 17 Spring Boot 3** server. 
 - **Performance:** Java's JIT compiler heavily outperforms Python backend equivalents in memory-constrained local station servers.
-- **Resilience:** Global Exception Handling (@RestControllerAdvice) intercepts every bad request, preventing ugly HTML 500 stack traces and guaranteeing the REST API remains rock-solid.
-- **RBAC Security:** JWT-secured endpoints ensure a SCIENTIST cannot override cargo statuses�only a COMMANDER or LOGISTICS officer can.
+- **Resilience:** Global Exception Handling (`@RestControllerAdvice`) intercepts every bad request, preventing ugly HTML 500 stack traces and guaranteeing the REST API remains rock-solid.
+- **RBAC Security:** JWT-secured endpoints ensure a SCIENTIST cannot override cargo statuses—only a COMMANDER or LOGISTICS officer can.
 
 ---
 
