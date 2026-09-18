@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Emergency</title>
+    <link rel="stylesheet" href="css/main.css">
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D1B2A">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="cargo.html">Cargo & Assets</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html">Personnel Tracker</a>
+            <a href="emergency.html" class="active">Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+        </div>
+
+        <div class="main-content">
+            <h2>Emergency & SOS Protocol</h2>
+            
+            <div class="card" style="text-align: center; padding: 50px;">
+                <button class="btn btn-sos" onclick="triggerSOS()">SOS</button>
+                <p>Pressing this button will immediately broadcast an emergency alert to all personnel and command center.</p>
+                <p id="networkStatus" style="font-weight: bold; color: #2ECC71;">Online - Alerts will sync instantly.</p>
+            </div>
+
+            <!-- Form -->
+            <div class="card">
+                <h3>Submit Detailed Emergency Report</h3>
+                <form id="emergencyForm">
+                    <div class="form-group">
+                        <label>Emergency Type</label>
+                        <select id="type">
+                            <option value="MEDICAL">Medical Emergency</option>
+                            <option value="MISSING_PERSON">Missing Person</option>
+                            <option value="FIRE">Fire</option>
+                            <option value="EQUIPMENT_FAILURE">Critical Equipment Failure</option>
+                            <option value="WEATHER">Extreme Weather Hazard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Severity</label>
+                        <select id="severity">
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="description" rows="4" required placeholder="Describe the situation..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Submit Emergency Report</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Active Emergencies</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emergencyTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Network status listener
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        function updateNetworkStatus() {
+            const statusEl = document.getElementById('networkStatus');
+            if(navigator.onLine) {
+                statusEl.innerText = "Online - Alerts will sync instantly.";
+                statusEl.style.color = "#2ECC71";
+                // Trigger sync
+                if('serviceWorker' in navigator && 'SyncManager' in window) {
+                    navigator.serviceWorker.ready.then(swRegistration => {
+                        return swRegistration.sync.register('sync-sos');
+                    });
+                } else {
+                    // Fallback sync
+                    syncOfflineQueue();
+                }
+            } else {
+                statusEl.innerText = "Offline - Alerts queued locally and will sync when connection returns.";
+                statusEl.style.color = "#E74C3C";
+            }
+        }
+
+        async function triggerSOS() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const payload = {
+                        type: 'MEDICAL', // Default generic SOS
+                        severity: 'CRITICAL',
+                        reportedBy: 1, // mock user ID
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        description: 'URGENT SOS TRIGGERED FROM DASHBOARD',
+                        offlineQueued: !navigator.onLine
+                    };
+                    submitEmergency(payload);
+                }, () => {
+                    // Proceed without location
+                    const payload = {
+                        type: 'MEDICAL',
+                        severity: 'CRITICAL',
+                        reportedBy: 1,
+                        description: 'URGENT SOS TRIGGERED (Location Unavailable)',
+                        offlineQueued: !navigator.onLine
+                    };
+                    submitEmergency(payload);
+                });
+            } else {
+                const payload = { type: 'MEDICAL', severity: 'CRITICAL', reportedBy: 1, description: 'URGENT SOS', offlineQueued: !navigator.onLine };
+                submitEmergency(payload);
+            }
+        }
+
+        document.getElementById('emergencyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const payload = {
+                type: document.getElementById('type').value,
+                severity: document.getElementById('severity').value,
+                description: document.getElementById('description').value,
+                reportedBy: 1,
+                offlineQueued: !navigator.onLine
+            };
+            submitEmergency(payload);
+            document.getElementById('emergencyForm').reset();
+        });
+
+        async function submitEmergency(payload) {
+            if(navigator.onLine) {
+                try {
+                    await apiCall('/emergency/sos', 'POST', payload);
+                    alert("Emergency Report Broadcasted!");
+                    loadEmergencies();
+                } catch(e) {
+                    queueOffline(payload);
+                }
+            } else {
+                queueOffline(payload);
+            }
+        }
+
+        function queueOffline(payload) {
+            payload.offlineQueued = true;
+            let queue = JSON.parse(localStorage.getItem('sos_queue') || '[]');
+            queue.push(payload);
+            localStorage.setItem('sos_queue', JSON.stringify(queue));
+            alert("Network offline. Emergency queued and will sync when connection returns.");
+            
+            // Register sync if possible
+            if('serviceWorker' in navigator && 'SyncManager' in window) {
+                navigator.serviceWorker.ready.then(reg => reg.sync.register('sync-sos'));
+            }
+        }
+
+        async function syncOfflineQueue() {
+            let queue = JSON.parse(localStorage.getItem('sos_queue') || '[]');
+            if(queue.length === 0) return;
+            
+            for(let i=0; i<queue.length; i++) {
+                try {
+                    await apiCall('/emergency/sos', 'POST', queue[i]);
+                    queue.splice(i, 1);
+                    i--;
+                } catch(e) {
+                    break;
+                }
+            }
+            localStorage.setItem('sos_queue', JSON.stringify(queue));
+            loadEmergencies();
+        }
+
+        async function loadEmergencies() {
+            try {
+                const emergencies = await apiCall('/emergency');
+                const tbody = document.getElementById('emergencyTableBody');
+                tbody.innerHTML = '';
+                
+                emergencies.forEach(e => {
+                    let statusClass = e.status === 'ACTIVE' ? 'badge-danger' : 
+                                      e.status === 'RESPONDING' ? 'badge-warning' : 'badge-success';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${new Date(e.createdAt).toLocaleString()}</td>
+                            <td>${e.type}</td>
+                            <td>${e.severity}</td>
+                            <td>${e.description}</td>
+                            <td><span class="badge ${statusClass}">${e.status}</span></td>
+                            <td>
+                                ${e.status !== 'RESOLVED' ? `<button class="btn btn-primary" onclick="resolveEmergency(${e.id})">Resolve</button>` : 'Resolved'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {}
+        }
+
+        async function resolveEmergency(id) {
+            try {
+                await apiCall(`/emergency/${id}/resolve`, 'PUT');
+                loadEmergencies();
+            } catch(e) {
+                alert("Failed to resolve emergency.");
+            }
+        }
+
+        // Initialize
+        updateNetworkStatus();
+        loadEmergencies();
+        
+        // Polling for updates (since we are using vanilla JS and STOMP WebSocket client requires SockJS+StompJS libraries which aren't specified, polling is a simple fallback. If we want WebSocket we'd need to include STOMP JS CDN. Polling is acceptable for vanilla demo, or we leave it static).
+        setInterval(loadEmergencies, 10000); 
+
+    </script>
+</body>
+</html>
+
+

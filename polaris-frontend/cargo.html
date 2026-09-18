@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Cargo & Assets</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D1B2A">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="cargo.html" class="active">Cargo & Assets</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html">Personnel Tracker</a>
+            <a href="emergency.html">Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+        </div>
+
+        <div class="main-content">
+            <h2>Cargo & Assets Management</h2>
+            
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <button class="btn btn-primary" onclick="startScanner()">Scan QR Code</button>
+                    <button class="btn btn-primary" onclick="toggleForm()">+ Register Asset</button>
+                </div>
+            </div>
+
+            <!-- QR Scanner Container -->
+            <div id="reader" style="display: none; background: white;"></div>
+
+            <!-- Registration Form -->
+            <div id="registrationForm" class="card" style="display: none;">
+                <h3>Register New Asset</h3>
+                <form id="assetForm">
+                    <div class="form-group">
+                        <label>Asset Name</label>
+                        <input type="text" id="assetName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>QR Code Data</label>
+                        <input type="text" id="qrCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="category">
+                            <option value="SCIENTIFIC">Scientific</option>
+                            <option value="FOOD">Food</option>
+                            <option value="FUEL">Fuel</option>
+                            <option value="MEDICAL">Medical</option>
+                            <option value="CONSTRUCTION">Construction</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Initial Status</label>
+                        <select id="status">
+                            <option value="PACKED">Packed</option>
+                            <option value="AT_PORT">At Port</option>
+                            <option value="ON_VESSEL">On Vessel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Is Critical?</label>
+                        <select id="isCritical">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Asset</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Asset List</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>QR Code</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Critical</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let html5QrcodeScanner;
+
+        function toggleForm() {
+            const form = document.getElementById('registrationForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function startScanner() {
+            const reader = document.getElementById('reader');
+            reader.style.display = 'block';
+            
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }
+
+        async function onScanSuccess(decodedText, decodedResult) {
+            html5QrcodeScanner.clear();
+            document.getElementById('reader').style.display = 'none';
+            
+            try {
+                const asset = await apiCall(`/assets/qr/${decodedText}`);
+                if(asset) {
+                    const reader = document.getElementById('reader');
+                    reader.insertAdjacentHTML('afterend', `
+                        <div id="scanResult" style="border-left: 4px solid #2ECC71; padding: 20px; background: rgba(46, 204, 113, 0.1); margin: 20px 0; border-radius: 4px;">
+                            <h3 style="color: #2ECC71; margin-top: 0; display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:24px;">✓</span> ASSET VERIFIED
+                            </h3>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                <p><strong>QR:</strong> ${asset.qrCode}</p>
+                                <p><strong>Name:</strong> ${asset.name}</p>
+                                <p><strong>Category:</strong> ${asset.category}</p>
+                                <p><strong>Status:</strong> <span style="color:#F39C12; font-weight:bold;">${asset.status}</span></p>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <label style="display:inline-block; margin-right:10px;">Quick Update:</label>
+                                <select id="quickStatusSelect" style="width: auto; padding: 5px; display:inline-block;">
+                                    <option value="">Select New Status...</option>
+                                    <option value="ON_VESSEL">Load to Vessel</option>
+                                    <option value="AT_STATION">Receive at Station</option>
+                                    <option value="IN_USE">Deploy (In Use)</option>
+                                </select>
+                                <button onclick="quickUpdateStatus(${asset.id})" class="btn btn-primary" style="padding: 5px 15px;">Confirm</button>
+                                <button onclick="document.getElementById('scanResult').remove()" class="btn btn-danger" style="padding: 5px 15px;">Close</button>
+                            </div>
+                        </div>
+                    `);
+                }
+            } catch (err) {
+                const reader = document.getElementById('reader');
+                reader.insertAdjacentHTML('afterend', `
+                    <div id="scanResult" style="border-left: 4px solid #E74C3C; padding: 20px; background: rgba(231, 76, 60, 0.1); margin: 20px 0; border-radius: 4px;">
+                        <h3 style="color: #E74C3C; margin-top: 0; display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:24px;">❌</span> UNKNOWN ASSET
+                        </h3>
+                        <p>The scanned QR code <strong>${decodedText}</strong> does not match any official POLARIS cargo records.</p>
+                        <button onclick="document.getElementById('scanResult').remove()" class="btn btn-danger" style="margin-top:10px;">Close</button>
+                    </div>
+                `);
+            }
+        }
+
+        async function quickUpdateStatus(id) {
+            const status = document.getElementById('quickStatusSelect').value;
+            if(!status) return;
+            await updateStatus(id, status);
+            document.getElementById('scanResult').remove();
+            alert("Status updated successfully!");
+        }
+
+        function onScanFailure(error) {
+            // Ignore scan failures to avoid noise
+        }
+
+        document.getElementById('assetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('assetName').value,
+                qrCode: document.getElementById('qrCode').value,
+                category: document.getElementById('category').value,
+                status: document.getElementById('status').value,
+                isCritical: document.getElementById('isCritical').value === 'true'
+            };
+            
+            try {
+                await apiCall('/assets', 'POST', data);
+                toggleForm();
+                document.getElementById('assetForm').reset();
+                loadAssets();
+            } catch (e) {
+                alert('Failed to save asset');
+            }
+        });
+
+        async function loadAssets() {
+            try {
+                const assets = await apiCall('/assets');
+                const tbody = document.getElementById('assetTableBody');
+                tbody.innerHTML = '';
+                
+                assets.forEach(a => {
+                    let statusClass = 'badge-success';
+                    if(a.isCritical) statusClass = 'badge-danger';
+                    if(a.status === 'PACKED' || a.status === 'AT_PORT') statusClass = 'badge-warning';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${a.id}</td>
+                            <td>${a.name}</td>
+                            <td>${a.qrCode}</td>
+                            <td>${a.category}</td>
+                            <td><span class="badge ${statusClass}">${a.status}</span></td>
+                            <td>${a.isCritical ? 'Yes' : 'No'}</td>
+                            <td>
+                                <select onchange="updateStatus(${a.id}, this.value)" style="width:auto; padding:5px;">
+                                    <option value="">Update...</option>
+                                    <option value="PACKED">Packed</option>
+                                    <option value="AT_PORT">At Port</option>
+                                    <option value="ON_VESSEL">On Vessel</option>
+                                    <option value="AT_STATION">At Station</option>
+                                    <option value="IN_USE">In Use</option>
+                                    <option value="RETURNED">Returned</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {}
+        }
+
+        async function updateStatus(id, status) {
+            if(!status) return;
+            try {
+                await apiCall(`/assets/${id}/status`, 'PUT', { status });
+                loadAssets();
+            } catch(e) {
+                alert('Update failed');
+            }
+        }
+
+        loadAssets();
+    </script>
+</body>
+</html>
+

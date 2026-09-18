@@ -1,0 +1,8 @@
+package com.polaris.dto;
+
+import lombok.Data;
+
+@Data
+public class StatusUpdateRequest {
+    private String status;
+}

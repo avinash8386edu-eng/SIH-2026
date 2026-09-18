@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Login</title>
+    <link rel="stylesheet" href="css/main.css">
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D1B2A">
+</head>
+<body>
+
+    <div class="login-container">
+        <h1 style="font-size: 48px; letter-spacing: 5px; color: #85C1E9;">POLARIS</h1>
+        <p>Indian Antarctic Expedition Management</p>
+        
+        <div class="card">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="Enter email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">LOGIN</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                console.log('Service Worker registered', reg);
+            }).catch(err => console.error('SW Error', err));
+        }
+    </script>
+</body>
+

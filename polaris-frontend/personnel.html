@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Personnel Tracker</title>
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D1B2A">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="cargo.html">Cargo & Assets</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html" class="active">Personnel Tracker</a>
+            <a href="emergency.html">Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+        </div>
+
+        <div class="main-content">
+            <h2>Personnel & Geolocation Tracker</h2>
+            
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <button class="btn btn-primary" onclick="checkIn()">Daily Check-in (Send Location)</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <!-- Map Container -->
+                <div id="map"></div>
+            </div>
+
+            <div class="card">
+                <h3>Personnel Roster</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Location</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personnelTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let map;
+        let markers = {};
+
+        function initMap() {
+            // Antarctica center coordinates
+            map = L.map('map').setView([-75.0, 0.0], 3);
+            
+            // CartoDB Dark Matter tile layer for OLED optimization and sleek UI
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+            }).addTo(map);
+        }
+
+        async function loadPersonnel() {
+            try {
+                const personnel = await apiCall('/personnel');
+                const tbody = document.getElementById('personnelTableBody');
+                tbody.innerHTML = '';
+                
+                personnel.forEach(p => {
+                    // Add to table
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p.name}</td>
+                            <td>${p.role}</td>
+                            <td><span class="badge badge-success">${p.currentStatus || 'UNKNOWN'}</span></td>
+                            <td>${p.lastLatitude ? p.lastLatitude.toFixed(4) + ', ' + p.lastLongitude.toFixed(4) : 'N/A'}</td>
+                            <td>
+                                <select onchange="updateStatus(${p.id}, this.value)" style="width:auto; padding:5px;">
+                                    <option value="">Update...</option>
+                                    <option value="AT_STATION">At Station</option>
+                                    <option value="FIELD_MISSION">Field Mission</option>
+                                    <option value="ON_VESSEL">On Vessel</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Add to map if coords exist
+                    if(p.lastLatitude && p.lastLongitude) {
+                        if(markers[p.id]) {
+                            map.removeLayer(markers[p.id]);
+                        }
+                        const marker = L.marker([p.lastLatitude, p.lastLongitude])
+                            .addTo(map)
+                            .bindPopup(`<b>${p.name}</b><br>${p.role}<br>Status: ${p.currentStatus}`);
+                        markers[p.id] = marker;
+                    }
+                });
+            } catch(e) {
+                console.error("Failed to load personnel");
+            }
+        }
+
+        async function updateStatus(id, status) {
+            if(!status) return;
+            try {
+                await apiCall(`/personnel/${id}/status`, 'PUT', { status });
+                loadPersonnel();
+            } catch(e) {
+                alert('Update failed');
+            }
+        }
+
+        function checkIn() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    // We need user ID. In a real app we'd decode JWT or use a `/me` endpoint.
+                    // For demo, we prompt for ID or use ID=1
+                    const id = prompt("Enter your User ID for Check-in (e.g. 1):", "1");
+                    if(!id) return;
+
+                    try {
+                        await apiCall(`/personnel/${id}/checkin`, 'POST', {
+                            latitude: lat,
+                            longitude: lon,
+                            status: 'AT_STATION' // Default check-in status
+                        });
+                        alert("Check-in successful!");
+                        loadPersonnel();
+                    } catch(e) {
+                        alert("Check-in failed. " + e.message);
+                    }
+                }, (error) => {
+                    alert("Geolocation error: " + error.message);
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        initMap();
+        loadPersonnel();
+    </script>
+</body>
+</html>
+

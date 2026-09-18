@@ -1,0 +1,25 @@
+# Java/Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.eclipse
+.settings/
+
+# Node/Frontend
+node_modules/
+.npm/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
