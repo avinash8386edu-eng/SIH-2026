@@ -367,3 +367,65 @@ body.blizzard-mode::after {
 .notif-item.danger { border-left: 4px solid #E74C3C; }
 .notif-item.warning { border-left: 4px solid #F1C40F; }
 
+
+/* --- POWER CONSERVATION / BLIZZARD MODE --- */
+body.blizzard-mode {
+    background-color: #000000 !important;
+}
+body.blizzard-mode .sidebar {
+    display: none !important;
+}
+body.blizzard-mode .main-content {
+    margin-left: 0 !important;
+    padding: 10px !important;
+}
+body.blizzard-mode .non-critical {
+    display: none !important;
+}
+.battery-widget {
+    cursor: pointer;
+    font-weight: 900;
+    margin-left: 20px;
+    padding: 5px 15px;
+    background: #2ECC71;
+    color: #000;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.battery-widget.critical {
+    background: #E74C3C;
+    color: #fff;
+    animation: blink 0.5s infinite;
+}
+
+/* BLIZZARD / LOW-POWER MODE overrides */
+body.blizzard-mode {
+    background-color: #000 !important;
+    color: #00FF00 !important;
+    font-family: monospace !important;
+}
+body.blizzard-mode .heavy-ui {
+    display: none !important;
+}
+body.blizzard-mode * {
+    animation: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+    text-shadow: none !important;
+}
+body.blizzard-mode .card, body.blizzard-mode .sidebar {
+    background: #000 !important;
+    border: 1px solid #00FF00 !important;
+}
+body.blizzard-mode .btn {
+    background: #111 !important;
+    border: 1px solid #00FF00 !important;
+    color: #00FF00 !important;
+}
+body.blizzard-mode h2, body.blizzard-mode h3, body.blizzard-mode h4 {
+    color: #00FF00 !important;
+}
+body.blizzard-mode .timeline-item.done::before {
+    background: #00FF00 !important;
+    border-color: #00FF00 !important;
+}
