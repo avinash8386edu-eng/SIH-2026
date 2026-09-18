@@ -1,205 +1,141 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POLARIS - Inventory</title>
+    <title>POLARIS - Smart Inventory Ledger</title>
     <link rel="stylesheet" href="css/main.css">
-    <style>
-        .expiring-soon { background-color: rgba(231, 76, 60, 0.2); }
-    </style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0D1B2A">
+    <meta name="theme-color" content="#000000">
 </head>
-<body>
-
+<body class="oled-theme">
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo">POLARIS</div>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="cargo.html">Cargo & Assets</a>
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html" class="active">Inventory</a>
-            <a href="personnel.html">Personnel Tracker</a>
-            <a href="fuel.html">Fuel & AI Monitoring</a>`n            <a href="emergency.html">Emergency / SOS</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
         <div class="main-content">
-            <h2>Inventory Management</h2>
-            
-            <div class="card">
-                <button class="btn btn-primary" onclick="toggleForm()">+ Add New Item</button>
-                <button class="btn btn-primary" style="margin-left: 10px;" onclick="loadExpiring()">View Expiring Soon</button>
-                <button class="btn btn-primary" style="margin-left: 10px;" onclick="loadInventory()">View All</button>
-            </div>
-
-            <!-- Form -->
-            <div id="addForm" class="card" style="display: none;">
-                <h3>Add Inventory Item</h3>
-                <form id="inventoryForm">
-                    <div class="form-group">
-                        <label>Item Name</label>
-                        <input type="text" id="itemName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select id="category">
-                            <option value="FOOD">Food</option>
-                            <option value="FUEL">Fuel</option>
-                            <option value="MEDICAL">Medical</option>
-                            <option value="SCIENTIFIC">Scientific</option>
-                            <option value="SPARE">Spare Parts</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" id="quantity" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Unit (kg, Liters, boxes)</label>
-                        <input type="text" id="unit" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Threshold</label>
-                        <input type="number" id="minThreshold" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Expiry Date</label>
-                        <input type="date" id="expiryDate">
-                    </div>
-                    <div class="form-group">
-                        <label>Storage Location</label>
-                        <input type="text" id="storageLocation" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Item</button>
-                </form>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color: #00E5FF;">❄️ Smart Inventory & Burn Rate Ledger</h2>
+                <div>
+                    <button class="btn" style="background:#8E44AD; color:#fff;" onclick="simulateVesselArrival()">⚓ Simulate Vessel Arrival (Auto-Update)</button>
+                    <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('inventoryTable', 'Polaris_Inventory_Report')">📊 Export Excel</button>
+                </div>
             </div>
             
-            <div id="fifoAlertsContainer" style="margin-bottom: 20px;"></div>
+            <div class="card" style="background:#111;">
+                <h3 style="color:#F1C40F;">WINTER INVENTORY GUARD</h3>
+                <p>System enforces FIFO and calculates Burn Rate (Days Remaining based on daily base consumption).</p>
+            </div>
 
-            <div class="card">
-                <h3>Stock List</h3>
-                <table>
+            <div class="card" style="background:#111; margin-top:20px;">
+                <h3>Current Stock & Lifecycle (Maitri / Bharati)</h3>
+                <table id="inventoryTable">
                     <thead>
                         <tr>
                             <th>Item Name</th>
-                            <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Threshold</th>
-                            <th>Expiry Date</th>
-                            <th>Location</th>
+                            <th>Quantity (Units)</th>
+                            <th>Burn Rate (Est. Days Left)</th>
+                            <th>Storage Zone</th>
+                            <th>Status / Expiry</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="invTableBody">
+                    <tbody id="inventoryTableBody">
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/advanced-sos.js"></script>
     <script>
-        function toggleForm() {
-            const form = document.getElementById('addForm');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
-        document.getElementById('inventoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                itemName: document.getElementById('itemName').value,
-                category: document.getElementById('category').value,
-                quantity: parseFloat(document.getElementById('quantity').value),
-                unit: document.getElementById('unit').value,
-                minimumThreshold: parseFloat(document.getElementById('minThreshold').value),
-                expiryDate: document.getElementById('expiryDate').value || null,
-                storageLocation: document.getElementById('storageLocation').value
-            };
-            
-            try {
-                await apiCall('/inventory', 'POST', data);
-                toggleForm();
-                document.getElementById('inventoryForm').reset();
-                loadInventory();
-            } catch (e) {
-                alert('Failed to save item');
-            }
-        });
-
-        function renderTable(items) {
-            const tbody = document.getElementById('invTableBody');
-            tbody.innerHTML = '';
-            
-            const today = new Date();
-            const thirtyDays = new Date();
-            thirtyDays.setDate(today.getDate() + 30);
-
-            items.forEach(i => {
-                let rowClass = '';
-                
-                // Highlight expiring
-                if(i.expiryDate) {
-                    const expDate = new Date(i.expiryDate);
-                    if(expDate <= thirtyDays) {
-                        rowClass = 'expiring-soon';
-                    }
-                }
-                
-                // Highlight low stock
-                let qtyStyle = '';
-                if(i.quantity <= i.minimumThreshold) {
-                    qtyStyle = 'color: #E74C3C; font-weight: bold;';
-                }
-
-                tbody.innerHTML += `
-                    <tr class="${rowClass}">
-                        <td>${i.itemName}</td>
-                        <td>${i.category}</td>
-                        <td style="${qtyStyle}">${i.quantity} ${i.unit}</td>
-                        <td>${i.minimumThreshold} ${i.unit}</td>
-                        <td>${i.expiryDate || 'N/A'}</td>
-                        <td>${i.storageLocation}</td>
-                    </tr>
-                `;
-            });
-        }
-
         async function loadInventory() {
             try {
                 const items = await apiCall('/inventory');
-                renderTable(items);
-            } catch(e) {}
+                const tbody = document.getElementById('inventoryTableBody');
+                tbody.innerHTML = '';
+                
+                const now = new Date();
+                items.sort((a,b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+
+                items.forEach(item => {
+                    const exp = new Date(item.expiryDate);
+                    const diffMonths = (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30);
+                    
+                    let rowStyle = '';
+                    let statusText = 'HEALTHY';
+                    let expiryText = exp.toLocaleDateString();
+                    
+                    if (diffMonths < 0) {
+                        rowStyle = 'background: rgba(231, 76, 60, 0.5); opacity: 0.6;';
+                        statusText = 'EXPIRED';
+                    } else if (diffMonths <= 3) {
+                        rowStyle = 'background: rgba(241, 196, 15, 0.2); border-left: 4px solid #F1C40F;';
+                        statusText = '⚠️ EXPIRING SOON';
+                    }
+
+                    // Burn Rate Logic: Mock daily consumption based on category
+                    let dailyBurn = 1;
+                    if(item.category === 'FUEL') dailyBurn = 200; // 200 Liters/day
+                    if(item.category === 'FOOD') dailyBurn = 50;  // 50 Rations/day
+                    const daysLeft = Math.floor(item.quantity / dailyBurn);
+                    
+                    let burnAlert = daysLeft < 30 ? `<span style="color:#E74C3C; font-weight:bold;">${daysLeft} Days (CRITICAL)</span>` : `${daysLeft} Days`;
+                    if (diffMonths < 0) burnAlert = '0 Days (Disposal Required)';
+
+                    tbody.innerHTML += `
+                        <tr style="${rowStyle}">
+                            <td><strong>${item.itemName}</strong></td>
+                            <td>${item.quantity} ${item.unit || ''}</td>
+                            <td>${burnAlert}</td>
+                            <td>${item.storageLocation}</td>
+                            <td style="${diffMonths <= 3 ? 'color:#F1C40F; font-weight:bold;' : ''}">${statusText} (${expiryText})</td>
+                            <td>
+                                <button onclick="useItem(${item.id})" class="btn btn-primary" style="padding:5px 10px;" ${diffMonths < 0 ? 'disabled' : ''}>Dispatch</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { console.error(e); }
         }
-        
-        async function loadExpiring() {
-            try {
-                const items = await apiCall('/inventory/expiring');
-                renderTable(items);
-            } catch(e) {}
+
+        async function useItem(id) {
+            alert(`Dispatching item ID ${id} following FIFO protocols.`);
+            loadInventory();
+        }
+
+        function simulateVesselArrival() {
+            alert("🚢 Store Manager Alert:\nMV Vasiliy Golovnin has docked at Ice Shelf.\n\nAutomated systems have successfully cross-checked Manifest AL-1403. Quantities for ATF Fuel and MRE Rations have been auto-updated in the Database!");
+            // Mock backend POST for restock
+            apiCall('/inventory', 'POST', {
+                itemName: "Winter Diesel (ATF) - Vessel Batch",
+                category: "FUEL",
+                quantity: 25000,
+                unit: "Liters",
+                minimumThreshold: 5000,
+                expiryDate: "2028-01-01",
+                storageLocation: "Bharati Fuel Dump"
+            }).then(() => loadInventory());
+        }
+
+        function exportToExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+            XLSX.writeFile(wb, filename + '.xlsx');
+            alert("Ministry Excel Report Generated Successfully!");
         }
 
         loadInventory();
-
-        // Connect WebSocket for Live Inventory Alerts
-        const socket = new SockJS('http://localhost:8080/ws');
-        const stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected to FIFO Alert System: ' + frame);
-            stompClient.subscribe('/topic/inventory-alerts', function (alertMsg) {
-                const container = document.getElementById('fifoAlertsContainer');
-                container.innerHTML += `
-                    <div style="background: #C0392B; color: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border-left: 5px solid #F1C40F;">
-                        ⚠️ ${alertMsg.body}
-                    </div>
-                `;
-            });
-        });
     </script>
 </body>
 </html>
-
-

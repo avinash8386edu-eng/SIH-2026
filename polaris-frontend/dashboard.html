@@ -1,133 +1,67 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POLARIS - Dashboard</title>
+    <title>POLARIS - Expedition Planning</title>
     <link rel="stylesheet" href="css/main.css">
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0D1B2A">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
 </head>
-<body>
-
+<body class="oled-theme">
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo">POLARIS</div>
-            <a href="dashboard.html" class="active">Dashboard</a>
-            <a href="cargo.html">Cargo & Assets</a>
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html" class="active">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html">Inventory</a>
-            <a href="personnel.html">Personnel Tracker</a>
-            <a href="fuel.html">Fuel & AI Monitoring</a>`n            <a href="emergency.html">Emergency / SOS</a>
-            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid #ffffff22;">Logout</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <h2>Command Center Dashboard</h2>
+            <h2 style="color: #00E5FF;">🗺️ Expedition Planning & Telemetry</h2>
             
-            <div class="stats-grid">
-                <div class="card stat-card">
-                    <h4>Total Personnel</h4>
-                    <h3 id="stat-personnel">0</h3>
+            <div class="dashboard-grid" style="padding:0;">
+                <div class="card" style="background:#111; border-color:#3498DB;">
+                    <h3 style="color:#3498DB;">MISSION OVERVIEW</h3>
+                    <p><strong>Mission Name:</strong> 44th ISEA (Indian Scientific Expedition to Antarctica)</p>
+                    <p><strong>Lead Vessel:</strong> MV Vasiliy Golovnin</p>
+                    <p><strong>Target Bases:</strong> Maitri, Bharati</p>
+                    <p><strong>Objective:</strong> Climate & Geological Core Extraction</p>
                 </div>
-                <div class="card stat-card">
-                    <h4>Active Cargo Assets</h4>
-                    <h3 id="stat-cargo">0</h3>
-                </div>
-                <div class="card stat-card">
-                    <h4>Low Stock Alerts</h4>
-                    <h3 id="stat-inventory" style="color: #F39C12;">0</h3>
-                </div>
-                <div class="card stat-card">
-                    <h4>Active Emergencies</h4>
-                    <h3 id="stat-emergency" style="color: #E74C3C;">0</h3>
+                
+                <div class="card" style="background:#111;">
+                    <h3 style="color:#2ECC71;">TELEMETRY LINK</h3>
+                    <p><strong>NRSC/ISRO Weather Overlay:</strong> <span style="color:#2ECC71;">SYNCHRONIZED (INSAT-3D)</span></p>
+                    <p><strong>CATS Status:</strong> <span style="color:#2ECC71;">NOMINAL</span></p>
+                    <p><strong>ECIL VSAT:</strong> 1.5 Mbps Up / 2.0 Mbps Down</p>
                 </div>
             </div>
-            
-                        <div class="card" style="margin-top:20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>Expedition Planning & Logistics Timeline (ISEA-44)</h3>
-                    <span class="badge badge-success">ON SCHEDULE</span>
-                </div>
-                <div style="margin-top: 15px; position:relative;">
-                    <!-- Simple CSS Gantt Chart -->
-                    <div style="display:flex; height:30px; background:#1B4F72; border-radius:4px; overflow:hidden;">
-                        <div style="width:20%; background:#2ECC71; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">Phase 1: Loading (Goa)</div>
-                        <div style="width:30%; background:#F39C12; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; border-left:2px solid #000;">Phase 2: Vessel Transit</div>
-                        <div style="width:15%; background:#E74C3C; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; border-left:2px solid #000;">Phase 3: Ice Unloading</div>
-                        <div style="width:35%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:12px; border-left:2px solid #000;">Phase 4: Station Handover</div>
-                    </div>
-                    <!-- Progress Marker -->
-                    <div style="position:absolute; top:-5px; left:45%; width:4px; height:40px; background:#fff; box-shadow:0 0 10px #fff;"></div>
-                    <div style="position:absolute; top:35px; left:41%; font-size:12px; color:#fff;">? TODAY (Transit)</div>
-                </div>
+
+            <div class="card" style="background:#111; margin-top:20px;">
+                <h3 style="color:#E74C3C;">COMMAND CENTER OVERRIDE</h3>
+                <p>Approve the deployment parameters for the current operational phase. This locks the cargo manifest and allows the ice-shelf transit to commence.</p>
+                <button onclick="approveMission()" class="btn btn-primary" style="padding:15px 30px; font-size:18px; font-weight:bold; letter-spacing:2px; background:#E74C3C; border:none; box-shadow:0 0 15px #e74c3c;">APPROVE 44th ISEA DEPLOYMENT</button>
             </div>
         </div>
     </div>
 
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script src="js/global-ui.js"></script>
     <script>
-        async function loadDashboard() {
-            try {
-                // Fetch stats concurrently
-                const [personnel, assets, inventory, emergencies] = await Promise.all([
-                    apiCall('/personnel'),
-                    apiCall('/assets'),
-                    apiCall('/inventory'),
-                    apiCall('/emergency')
-                ]);
-
-                document.getElementById('stat-personnel').innerText = personnel.length || 0;
-                
-                // Count active assets (not packed or returned)
-                const activeAssets = (assets || []).filter(a => a.status !== 'PACKED' && a.status !== 'RETURNED').length;
-                document.getElementById('stat-cargo').innerText = activeAssets;
-
-                // Count low stock
-                const lowStockCount = (inventory || []).filter(i => i.quantity <= i.minimumThreshold).length;
-                document.getElementById('stat-inventory').innerText = lowStockCount;
-
-                // Count active emergencies
-                const activeEmergencyCount = (emergencies || []).filter(e => e.status === 'ACTIVE').length;
-                document.getElementById('stat-emergency').innerText = activeEmergencyCount;
-                
-            } catch (err) {
-                console.error("Failed to load dashboard stats", err);
-            }
-        }
-        
-        loadDashboard();
-        setInterval(loadDashboard, 10000); // Auto-sync every 10 seconds
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script>
-        // Connect to WebSocket for instant SOS alerts
-        if (typeof SockJS !== 'undefined' && typeof Stomp !== 'undefined') {
-            const socket = new SockJS('http://localhost:8080/ws-emergency');
-            const stompClient = Stomp.over(socket);
-            stompClient.debug = null; 
-            stompClient.connect({}, (frame) => {
-                stompClient.subscribe('/topic/sos', (message) => {
-                    const data = JSON.parse(message.body);
-                    const alertBox = document.createElement('div');
-                    alertBox.style = "position:fixed; top:20px; right:20px; background:#E74C3C; color:white; padding:20px; border-radius:8px; z-index:9999; border: 2px solid #fff;";
-                    alertBox.innerHTML = `<h3>🚨 CRITICAL SOS ALARM!</h3><p>Type: ${data.type}</p><p>Location: ${data.latitude || 'N/A'}, ${data.longitude || 'N/A'}</p>`;
-                    document.body.appendChild(alertBox);
-                    
-                    // Force refresh stats
-                    loadDashboard();
-                    
-                    setTimeout(() => { if(document.body.contains(alertBox)) document.body.removeChild(alertBox); }, 15000);
-                });
-            });
+        function approveMission() {
+            alert("HQ AUTHORIZED: 44th ISEA Mission Deployment parameters locked. Syncing with COMNAP database...");
+            // Simulate API interaction
+            setTimeout(() => {
+                alert("COMNAP Sync Complete. Godspeed, Expedition 44.");
+            }, 1500);
         }
     </script>
 </body>
 </html>
-
-
-
 

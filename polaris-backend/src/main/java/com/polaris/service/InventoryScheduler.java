@@ -31,7 +31,7 @@ public class InventoryScheduler {
         
         for (Inventory item : expiringItems) {
             if (!item.getAlertSent()) {
-                String message = "EXPIRY ALERT: " + item.getItemName() + " expires on " + item.getExpiryDate() + " (Location: " + item.getLocation() + "). Please enforce FIFO.";
+                String message = "EXPIRY ALERT: " + item.getItemName() + " expires on " + item.getExpiryDate() + " (Location: " + item.getStorageLocation() + "). Please enforce FIFO.";
                 log.warn(message);
                 messagingTemplate.convertAndSend("/topic/inventory-alerts", message);
                 item.setAlertSent(true);
