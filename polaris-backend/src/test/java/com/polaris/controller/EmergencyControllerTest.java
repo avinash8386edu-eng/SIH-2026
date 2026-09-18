@@ -51,8 +51,8 @@ public class EmergencyControllerTest {
         request.setType(EmergencyType.MEDICAL);
         request.setSeverity(EmergencySeverity.CRITICAL);
         request.setDescription("Blizzard trap!");
-        request.setLatitude("-70.7667");
-        request.setLongitude("11.7333");
+        request.setLatitude(-70.7667);
+        request.setLongitude(11.7333);
 
         Emergency saved = new Emergency();
         saved.setId(1L);
@@ -60,8 +60,8 @@ public class EmergencyControllerTest {
         saved.setSeverity(EmergencySeverity.CRITICAL);
         saved.setDescription("Blizzard trap!");
         saved.setStatus(EmergencyStatus.ACTIVE);
-        saved.setLatitude("-70.7667");
-        saved.setLongitude("11.7333");
+        saved.setLatitude(-70.7667);
+        saved.setLongitude(11.7333);
 
         when(emergencyRepository.save(any(Emergency.class))).thenReturn(saved);
 
