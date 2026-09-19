@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Cargo QR Logistics</title>
+    <link rel="stylesheet" href="css/main.css">
+    <meta name="theme-color" content="#000000">
+    <style>
+        /* Provenance Timeline CSS */
+        .timeline { border-left: 3px solid #00E5FF; margin-left: 20px; padding-left: 20px; text-align: left; }
+        .timeline-item { position: relative; margin-bottom: 20px; }
+        .timeline-item::before { content: ''; position: absolute; left: -29px; top: 0; width: 15px; height: 15px; background: #000; border: 3px solid #00E5FF; border-radius: 50%; }
+        .timeline-item.done::before { background: #00E5FF; }
+        .timeline-date { color: #888; font-size: 0.9em; }
+        .timeline-title { color: #fff; font-weight: bold; font-size: 1.1em; margin: 5px 0; }
+        .timeline-desc { color: #aaa; font-size: 0.95em; margin: 0; }
+    </style>
+</head>
+<body class="oled-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html" class="active">Cargo Tracking</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+        </div>
+
+        <div class="main-content">
+            <h2 style="color: #00E5FF;">📦 Advanced QR Optical Scanner & Logistics</h2>
+            
+            <div class="grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="card" style="background:#111;">
+                    <h3>Optical Hardware Scanner</h3>
+                    <p style="color:#aaa;">Hold asset QR code to webcam.</p>
+                    <div id="qr-reader" style="width:100%; border:2px solid #333; border-radius:8px;"></div>
+                </div>
+
+                <div class="card" style="background:#111; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <h3>Payload Export (Ministry Report)</h3>
+                        <p>Generate Manifest AL-1403 with Ice Core Metadata & ISO Limits.</p>
+                        <button class="btn btn-primary" onclick="exportAL1403()">⬇️ Export AL-1403 PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="background:#111; margin-top: 20px;">
+                <h3>Active Payload Database (Bharati / Maitri)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>QR Tag ID</th>
+                            <th>Payload Name</th>
+                            <th>Geological Metadata</th>
+                            <th>Category</th>
+                            <th>Location/Chain</th>
+                            <th>Priority</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="provenanceModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#1a1a1a; padding:30px; border-radius:10px; border:2px solid #00E5FF; z-index:9999; width:450px; box-shadow:0 0 50px rgba(0,0,0,0.8);">
+        <h2 style="color:#00E5FF; margin-top:0;">📦 QR Asset Provenance</h2>
+        <div id="provenanceContent" class="timeline">
+            <!-- Injected by JS -->
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="document.getElementById('provenanceModal').style.display='none'">Close Inspection</button>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script>
+        async function loadAssets() {
+            try {
+                const assets = await apiCall('/assets');
+                const tbody = document.getElementById('assetsTableBody');
+                tbody.innerHTML = '';
+                
+                assets.forEach(a => {
+                    const meta = a.category === 'SCIENTIFIC' ? 'Extract Target: 100m Strata' : 'N/A';
+                    let catName = a.category;
+                    if(catName === 'FUEL') catName = 'ATF / HSD';
+                    if(catName === 'FOOD') catName = 'MRE Rations';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="color:#00E5FF; cursor:pointer;" onclick="showProvenance('${a.qrCode}', '${a.name}')"><u>${a.qrCode}</u></td>
+                            <td>${a.name}</td>
+                            <td>${meta}</td>
+                            <td>${catName}</td>
+                            <td>${a.currentLocation}</td>
+                            <td style="${a.isCritical ? 'color:#E74C3C; font-weight:bold;' : 'color:#2ECC71;'}">${a.isCritical ? 'CRITICAL' : 'STANDARD'}</td>
+                            <td><button onclick="showProvenance('${a.qrCode}', '${a.name}')" class="btn" style="background:#F1C40F; color:#000; padding:5px;">🔍 Track History</button></td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { console.error("Assets load failed", e); }
+        }
+
+        function showProvenance(qrCode, name) {
+            const content = document.getElementById('provenanceContent');
+            
+            // Mocking dynamic data based on QR Code hash logic for realistic hackathon presentation
+            const isFuel = qrCode.includes('FUEL') || name.includes('Diesel');
+            const mfgDate = "15 Jan 2026";
+            const expDate = isFuel ? "15 Jan 2028" : "10 Sep 2027";
+            const mfgLocation = isFuel ? "IOCL Refinery, Gujarat" : "BHEL / DRDO India";
+
+            content.innerHTML = `
+                <div class="timeline-item done">
+                    <div class="timeline-date">${mfgDate}</div>
+                    <div class="timeline-title">🏭 Manufactured</div>
+                    <div class="timeline-desc">Source: ${mfgLocation}<br>Expiry/Shelf-Life: ${expDate}</div>
+                </div>
+                <div class="timeline-item done">
+                    <div class="timeline-date">10 Dec 2023</div>
+                    <div class="timeline-title">🚢 Dispatched (Goa Port)</div>
+                    <div class="timeline-desc">Cleared Customs. En-route to South Africa.</div>
+                </div>
+                <div class="timeline-item done">
+                    <div class="timeline-date">23 Dec 2023</div>
+                    <div class="timeline-title">🇿🇦 Transit (Cape Town)</div>
+                    <div class="timeline-desc">Flag-off for 43rd ISEA. Loaded onto MV Vasiliy Golovnin.</div>
+                </div>
+                <div class="timeline-item done">
+                    <div class="timeline-date">Today</div>
+                    <div class="timeline-title">❄️ Received (Antarctica)</div>
+                    <div class="timeline-desc">Scanned by Subrata Moulik at Maitri Station. Status: ACTIVE.</div>
+                </div>
+            `;
+            document.getElementById('provenanceModal').style.display = 'block';
+        }
+
+        // HTML5 QR Scanner
+        function onScanSuccess(decodedText, decodedResult) {
+            alert(`✅ Optical Scan Successful: ${decodedText}`);
+            html5QrcodeScanner.clear();
+            showProvenance(decodedText, 'Scanned Asset');
+        }
+
+        function exportAL1403() {
+            alert("Generating AL-1403 PDF Manifest...\n\nINCLUDED METADATA:\n- Ice Core Strata Targets\n- ISO-86 Ambient Temp Limits (-55°C)\n- Critical ATF Fuel Loadouts");
+        }
+
+        loadAssets();
+        
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+        html5QrcodeScanner.render(onScanSuccess, (error) => {});
+    </script>
+</body>
+</html>

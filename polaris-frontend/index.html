@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Mission Control</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+</head>
+<body class="oled-theme">
+    <div class="mission-control-header">
+        <h1>POLARIS</h1>
+        <p>INDIAN ANTARCTIC EXPEDITION - MISSION CONTROL</p>
+    </div>
+    
+    <div class="dashboard-grid">
+            <div class="module-card commander-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'dashboard.html')">
+                <div class="icon">🗺️</div>
+                <h3>Expedition Planning</h3>
+                <p>Access Level: Commander</p>
+            </div>
+
+            <!-- Cargo Tracking Module -->
+            <div class="module-card logistics-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'cargo.html')">
+                <div class="icon">📦</div>
+                <h3>Cargo Tracking</h3>
+                <p>Access Level: Logistics Officer</p>
+            </div>
+
+            <!-- Inventory Management Module -->
+            <div class="module-card logistics-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'inventory.html')">
+                <div class="icon">❄️</div>
+                <h3>Inventory Management</h3>
+                <p>Access Level: Logistics Officer</p>
+            </div>
+
+            <!-- Personnel Movement Module -->
+            <div class="module-card scientist-theme" onclick="launchModule('scientist1@polaris.com', 'sci123', 'personnel.html')">
+                <div class="icon">🚶</div>
+                <h3>Personnel Movement</h3>
+                <p>Access Level: Field Scientist</p>
+            </div>
+    </div>
+
+    <!-- Global Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script src="js/global-ui.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW Error', err));
+        }
+    </script>
+</body>
+</html>
+
