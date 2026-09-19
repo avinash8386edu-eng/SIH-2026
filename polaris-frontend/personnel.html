@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -37,21 +37,21 @@
 
         <div class="main-content">
             <div style="display:flex; justify-content:space-between;">
-                <h2 style="color: #00E5FF;">??????? ISRO Live Radar & Personnel Status</h2>
-                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">???? Export Ministry Excel Report</button>
+                <h2 style="color: #00E5FF;">🛰️ ISRO Live Radar & Personnel Status</h2>
+                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">📊 Export Ministry Excel Report</button>
             </div>
             
             <div class="dashboard-grid">
                 <div class="stat-card" style="border-left-color:#F1C40F;">
-                    <h4>???? On Traverse (Active)</h4>
+                    <h4>🚜 On Traverse (Active)</h4>
                     <h2 id="traverseCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#E67E22;">
-                    <h4>???? Quarantine / Acclimatization</h4>
+                    <h4>🏥 Quarantine / Acclimatization</h4>
                     <h2 id="quarantineCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#3498DB;">
-                    <h4>???? Transit (On Vessel)</h4>
+                    <h4>🚢 Transit (On Vessel)</h4>
                     <h2 id="vesselCount">0</h2>
                 </div>
             </div>
@@ -61,12 +61,12 @@
                 
                 <!-- Live Blizzard Prediction Widget -->
                 <div class="weather-panel">
-                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">?????? NRSC Weather</h3>
-                    <p style="margin:5px 0;"><strong>Temp:</strong> -42??C (Feels -55??C)</p>
+                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">🌩️ NRSC Weather</h3>
+                    <p style="margin:5px 0;"><strong>Temp:</strong> -42°C (Feels -55°C)</p>
                     <p style="margin:5px 0;"><strong>Wind:</strong> 110 km/h (Katabatic)</p>
                     <p style="margin:5px 0;"><strong>Visibility:</strong> 200m</p>
                     <hr style="border-color:#555;">
-                    <p class="blizzard-warn">?????? BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
+                    <p class="blizzard-warn">⚠️ BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
                 </div>
             </div>
 
@@ -105,8 +105,8 @@
             map = L.map('radar-map').setView([-70.7661, 11.7322], 6); // Maitri View
             
             // ISRO / NRSC Dark Theme TileLayer
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; POLARIS Radar Systems (Mock)',
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                className: 'dark-map', attribution: '&copy; OpenStreetMap contributors',
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
@@ -172,7 +172,7 @@
                         const etaTime = new Date(statusObj.etaTimestamp);
                         if (Date.now() > etaTime.getTime()) {
                             etaStyle = 'color:#E74C3C; font-weight:bold; animation: blink 1s infinite;';
-                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">???? TRIGGER AUTO-SOS</button>`;
+                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">🚨 TRIGGER AUTO-SOS</button>`;
                         } else {
                             actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
                         }
@@ -183,7 +183,7 @@
                     let baseSp = 95 + Math.floor(Math.random()*5);
                     let baseTemp = (36.5 + (Math.random()*0.5)).toFixed(1);
                     
-                    let vitalsHtml = `<span id="vital-hr-${p.id}">?????? ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">???? ${baseSp}%</span> | ??????? ${baseTemp}??C`;
+                    let vitalsHtml = `<span id="vital-hr-${p.id}">❤️ ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">🫁 ${baseSp}%</span> | 🌡️ ${baseTemp}°C`;
 
                     tbody.innerHTML += `
                         <tr id="row-user-${p.id}">
@@ -195,7 +195,7 @@
                             <td style="${etaStyle}">${statusObj.etaLabel || 'N/A'}</td>
                             <td>
                                 ${actionBtn}
-                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">?????? Sim Vitals</button>
+                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">⚠️ Sim Vitals</button>
                             </td>
                         </tr>
                     `;
@@ -234,5 +234,6 @@
     </script>
 </body>
 </html>
+
 
 
