@@ -42,6 +42,10 @@ public class User {
 
     private String emergencyPhone;
 
+    private String assignedVehicle;
+
+    private String crevasseRisk;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

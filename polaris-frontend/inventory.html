@@ -1,204 +1,272 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POLARIS - Inventory</title>
+    <title>POLARIS - Smart Inventory Ledger</title>
     <link rel="stylesheet" href="css/main.css">
-    <style>
-        .expiring-soon { background-color: rgba(231, 76, 60, 0.2); }
-    </style>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0D1B2A">
+    <meta name="theme-color" content="#000000">
 </head>
-<body>
-
+<body class="oled-theme">
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo">POLARIS</div>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="cargo.html">Cargo & Assets</a>
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html" class="active">Inventory</a>
-            <a href="personnel.html">Personnel Tracker</a>
-            <a href="fuel.html">Fuel & AI Monitoring</a>`n            <a href="emergency.html">Emergency / SOS</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
         <div class="main-content">
-            <h2>Inventory Management</h2>
-            
-            <div class="card">
-                <button class="btn btn-primary" onclick="toggleForm()">+ Add New Item</button>
-                <button class="btn btn-primary" style="margin-left: 10px;" onclick="loadExpiring()">View Expiring Soon</button>
-                <button class="btn btn-primary" style="margin-left: 10px;" onclick="loadInventory()">View All</button>
-            </div>
-
-            <!-- Form -->
-            <div id="addForm" class="card" style="display: none;">
-                <h3>Add Inventory Item</h3>
-                <form id="inventoryForm">
-                    <div class="form-group">
-                        <label>Item Name</label>
-                        <input type="text" id="itemName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select id="category">
-                            <option value="FOOD">Food</option>
-                            <option value="FUEL">Fuel</option>
-                            <option value="MEDICAL">Medical</option>
-                            <option value="SCIENTIFIC">Scientific</option>
-                            <option value="SPARE">Spare Parts</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Quantity</label>
-                        <input type="number" id="quantity" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Unit (kg, Liters, boxes)</label>
-                        <input type="text" id="unit" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Threshold</label>
-                        <input type="number" id="minThreshold" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Expiry Date</label>
-                        <input type="date" id="expiryDate">
-                    </div>
-                    <div class="form-group">
-                        <label>Storage Location</label>
-                        <input type="text" id="storageLocation" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save Item</button>
-                </form>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color: #00E5FF;">â„ï¸ Smart Inventory & Burn Rate Ledger</h2>
+                <div>
+                    <button class="btn" style="background:#8E44AD; color:#fff;" onclick="simulateVesselArrival()">âš“ Simulate Vessel Arrival (Auto-Update)</button>
+                    <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('inventoryTable', 'Polaris_Inventory_Report')">ðŸ“Š Export Excel</button>
+                </div>
             </div>
             
-            <div id="fifoAlertsContainer" style="margin-bottom: 20px;"></div>
+            <div class="card" style="background:#111;">
+                <h3 style="color:#F1C40F;">WINTER INVENTORY GUARD</h3>
+                <p>System enforces FIFO and calculates Burn Rate (Days Remaining based on daily base consumption).</p>
+                
+                <div class="grid heavy-ui" style="grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                    <!-- Line Chart for Fuel Depletion -->
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #fff; margin-bottom: 10px;">6-Month Fuel Burn Forecast (ATF & HSD)</h4>
+                        <div style="height: 250px;">
+                            <canvas id="burnRateChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Doughnut Chart for Categories -->
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #fff; margin-bottom: 10px;">Stock Distribution</h4>
+                        <div style="height: 250px;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="card">
-                <h3>Stock List</h3>
-                <table>
+            <div class="card" style="background:#111; margin-top:20px;">
+                <h3>Current Stock & Lifecycle (Maitri / Bharati)</h3>
+                <table id="inventoryTable">
                     <thead>
-                        <tr>
+                        
                             <th>Item Name</th>
-                            <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Threshold</th>
-                            <th>Expiry Date</th>
-                            <th>Location</th>
+                            <th>Quantity (Units)</th>
+                            <th>Burn Rate (Est. Days Left)</th>
+                            <th>Storage Zone</th>
+                            <th>Status / Expiry</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody id="invTableBody">
+                    <tbody id="inventoryTableBody">
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/advanced-sos.js"></script>
     <script>
-        function toggleForm() {
-            const form = document.getElementById('addForm');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
+    let burnRateChartInstance = null;
+    let categoryChartInstance = null;
+    let globalInventoryData = [];
 
-        document.getElementById('inventoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                itemName: document.getElementById('itemName').value,
-                category: document.getElementById('category').value,
-                quantity: parseFloat(document.getElementById('quantity').value),
-                unit: document.getElementById('unit').value,
-                minimumThreshold: parseFloat(document.getElementById('minThreshold').value),
-                expiryDate: document.getElementById('expiryDate').value || null,
-                storageLocation: document.getElementById('storageLocation').value
-            };
-            
-            try {
-                await apiCall('/inventory', 'POST', data);
-                toggleForm();
-                document.getElementById('inventoryForm').reset();
-                loadInventory();
-            } catch (e) {
-                alert('Failed to save item');
-            }
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        loadInventory();
+    });
 
-        function renderTable(items) {
-            const tbody = document.getElementById('invTableBody');
+    async function loadInventory() {
+        try {
+            const items = await apiCall('/inventory');
+            globalInventoryData = items; // Save for modal
+
+            const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
             
-            const today = new Date();
-            const thirtyDays = new Date();
-            thirtyDays.setDate(today.getDate() + 30);
+            const now = new Date();
+            items.sort((a,b) => new Date(a.expiryDate) - new Date(b.expiryDate));
 
-            items.forEach(i => {
-                let rowClass = '';
+            let fuelTotal = 0;
+            let foodTotal = 0;
+            let medTotal = 0;
+
+            items.forEach(item => {
+                const exp = new Date(item.expiryDate);
+                const diffMonths = (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30);
                 
-                // Highlight expiring
-                if(i.expiryDate) {
-                    const expDate = new Date(i.expiryDate);
-                    if(expDate <= thirtyDays) {
-                        rowClass = 'expiring-soon';
-                    }
-                }
+                let rowStyle = '';
+                let statusText = 'HEALTHY';
+                let expiryText = exp.toLocaleDateString();
                 
-                // Highlight low stock
-                let qtyStyle = '';
-                if(i.quantity <= i.minimumThreshold) {
-                    qtyStyle = 'color: #E74C3C; font-weight: bold;';
+                if (diffMonths < 0) {
+                    rowStyle = 'background: rgba(231, 76, 60, 0.5); opacity: 0.6;';
+                    statusText = 'EXPIRED';
+                } else if (diffMonths <= 3) {
+                    rowStyle = 'background: rgba(241, 196, 15, 0.2); border-left: 4px solid #F1C40F;';
+                    statusText = '⚠️ EXPIRING SOON';
                 }
+
+                // Burn Rate Logic: Mock daily consumption based on category
+                let dailyBurn = 1;
+                if(item.category === 'FUEL') { dailyBurn = 200; fuelTotal++; }
+                if(item.category === 'FOOD') { dailyBurn = 50; foodTotal++; }
+                if(item.category === 'MEDICAL') { medTotal++; }
+                const daysLeft = Math.floor(item.quantity / dailyBurn);
+                
+                let burnAlert = daysLeft < 30 ? `<span style="color:#E74C3C; font-weight:bold;">${daysLeft} Days (CRITICAL)</span>` : `${daysLeft} Days`;
+                if (diffMonths < 0) burnAlert = '0 Days (Disposal Required)';
 
                 tbody.innerHTML += `
-                    <tr class="${rowClass}">
-                        <td>${i.itemName}</td>
-                        <td>${i.category}</td>
-                        <td style="${qtyStyle}">${i.quantity} ${i.unit}</td>
-                        <td>${i.minimumThreshold} ${i.unit}</td>
-                        <td>${i.expiryDate || 'N/A'}</td>
-                        <td>${i.storageLocation}</td>
+                    <tr style="${rowStyle} cursor:pointer;" onclick="openInventoryModal(${item.id})">
+                        <td><strong>${item.itemName}</strong></td>
+                        <td>${item.quantity} ${item.unit || ''}</td>
+                        <td>${burnAlert}</td>
+                        <td>${item.storageLocation}</td>
+                        <td style="${diffMonths <= 3 ? 'color:#F1C40F; font-weight:bold;' : ''}">${statusText} (${expiryText})</td>
+                        <td>
+                            <button onclick="useItem(event, ${item.id})" class="btn btn-primary" style="padding:5px 10px;" ${diffMonths < 0 ? 'disabled' : ''}>Dispatch</button>
+                        </td>
                     </tr>
                 `;
             });
-        }
 
-        async function loadInventory() {
-            try {
-                const items = await apiCall('/inventory');
-                renderTable(items);
-            } catch(e) {}
-        }
+            updateCharts(items, fuelTotal, foodTotal, medTotal);
+        } catch(e) { console.error("Inventory load failed:", e); }
+    }
+
+    function updateCharts(items, fuelCount, foodCount, medCount) {
+        // 1. Burn Rate Line Chart (Simulating Fuel Depletion)
+        const ctxBurn = document.getElementById('burnRateChart').getContext('2d');
+        if (burnRateChartInstance) burnRateChartInstance.destroy();
         
-        async function loadExpiring() {
-            try {
-                const items = await apiCall('/inventory/expiring');
-                renderTable(items);
-            } catch(e) {}
-        }
+        let hsdFuel = items.find(i => i.itemName.includes("High-Speed Diesel")) || {quantity: 350000};
+        let atfFuel = items.find(i => i.itemName.includes("Aviation Turbine")) || {quantity: 500};
+        
+        let hsdData = [hsdFuel.quantity, hsdFuel.quantity - 30000, hsdFuel.quantity - 60000, hsdFuel.quantity - 95000, hsdFuel.quantity - 130000, hsdFuel.quantity - 170000];
+        let atfData = [atfFuel.quantity, atfFuel.quantity - 50, atfFuel.quantity - 150, atfFuel.quantity - 200, atfFuel.quantity - 300, atfFuel.quantity - 450];
 
-        loadInventory();
-
-        // Connect WebSocket for Live Inventory Alerts
-        const socket = new SockJS('http://localhost:8080/ws');
-        const stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected to FIFO Alert System: ' + frame);
-            stompClient.subscribe('/topic/inventory-alerts', function (alertMsg) {
-                const container = document.getElementById('fifoAlertsContainer');
-                container.innerHTML += `
-                    <div style="background: #C0392B; color: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border-left: 5px solid #F1C40F;">
-                        ⚠️ ${alertMsg.body}
-                    </div>
-                `;
-            });
+        burnRateChartInstance = new Chart(ctxBurn, {
+            type: 'line',
+            data: {
+                labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'],
+                datasets: [
+                    { label: 'HSD (Liters)', data: hsdData, borderColor: '#00E5FF', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'ATF (Barrels)', data: atfData, borderColor: '#E74C3C', backgroundColor: 'rgba(231, 76, 60, 0.1)', fill: true, tension: 0.4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#aaa' }, grid: { color: '#333' } },
+                    y: { ticks: { color: '#aaa' }, grid: { color: '#333' } }
+                }
+            }
         });
-    </script>
+
+        // 2. Category Distribution Doughnut Chart
+        const ctxCat = document.getElementById('categoryChart').getContext('2d');
+        if (categoryChartInstance) categoryChartInstance.destroy();
+        categoryChartInstance = new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fuel/Energy', 'Arctic Food', 'Medical Supplies'],
+                datasets: [{
+                    data: [fuelCount, foodCount, medCount],
+                    backgroundColor: ['#00E5FF', '#2ECC71', '#E74C3C'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } },
+                cutout: '70%'
+            }
+        });
+    }
+
+    async function useItem(event, id) {
+        event.stopPropagation();
+        alert(`Dispatching item ID ${id} following FIFO protocols.`);
+        loadInventory();
+    }
+
+    function simulateVesselArrival() {
+        alert("🚨 Store Manager Alert:\nMV Vasiliy Golovnin has docked at Ice Shelf.\n\nAutomated systems have successfully cross-checked Manifest AL-1403. Quantities for ATF Fuel and MRE Rations have been auto-updated in the Database!");
+        // Mock backend POST for restock
+        apiCall('/inventory', 'POST', {
+            itemName: "Winter Diesel (ATF) - Vessel Batch",
+            category: "FUEL",
+            quantity: 25000,
+            unit: "Liters",
+            minimumThreshold: 5000,
+            expiryDate: "2028-01-01",
+            storageLocation: "Bharati Fuel Dump",
+            expeditionId: 44
+        }).then(() => loadInventory());
+    }
+
+    function exportToExcel(tableId, filename) {
+        const table = document.getElementById(tableId);
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+        XLSX.writeFile(wb, filename + '.xlsx');
+        alert("Ministry Excel Report Generated Successfully!");
+    }
+
+    function openInventoryModal(id) {
+        const item = globalInventoryData.find(i => i.id === id);
+        if (!item) return;
+
+        const modal = document.getElementById('deepDetailModal');
+        const mTitle = document.getElementById('modalTitle');
+        const mContent = document.getElementById('modalContent');
+        
+        mTitle.innerText = item.itemName;
+        
+        // Detailed Enterprise Data Mockup
+        const rfid = `RFID-POLARIS-${Math.random().toString(36).substring(2,8).toUpperCase()}`;
+        const temp = item.category === 'MEDICAL' ? '2°C to 8°C (Monitored)' : 'N/A';
+        const doc = item.category === 'MEDICAL' ? 'Assigned Medical Officer: Dr. Rajesh Kumar' : '';
+
+        mContent.innerHTML = `
+            <table style="width:100%; border-collapse:collapse; color:#fff;">
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Batch ID / RFID:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${rfid}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Category:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${item.category}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Quantity:</strong></td><td style="padding:8px; border-bottom:1px solid #333; color:#00E5FF; font-weight:bold;">${item.quantity} ${item.unit}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Storage Location:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${item.storageLocation}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Expiry Date:</strong></td><td style="padding:8px; border-bottom:1px solid #333; color:#E74C3C;">${item.expiryDate}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Storage Temp:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${temp}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Last Audit:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${new Date().toLocaleDateString()} by Base Commander</td></tr>
+            </table>
+            <p style="margin-top:15px; color:#aaa; font-size:0.9em;">${doc}</p>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+</script>
+    <!-- Deep UI Modal -->
+    <div id="deepDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center;">
+        <div style="background:#1a1a1a; border:2px solid #00E5FF; padding:30px; border-radius:10px; min-width:400px; color:#fff; position:relative;">
+            <button onclick="document.getElementById('deepDetailModal').style.display='none'" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:3px; cursor:pointer; padding:5px 10px;">X</button>
+            <h2 id="modalTitle" style="color:#00E5FF; margin-top:0;">Item Detail</h2>
+            <hr style="border-color:#333;" />
+            <div id="modalContent" style="margin-top:20px; line-height:1.6;"></div>
+        </div>
+    </div>
 </body>
 </html>
 

@@ -1,4 +1,4 @@
-let map;
+﻿let map;
 
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('map')) {
@@ -22,14 +22,28 @@ async function loadPersonnel() {
         
         personnelList.forEach(person => {
             if (person.lastLatitude && person.lastLongitude) {
-                const marker = L.marker([person.lastLatitude, person.lastLongitude]).addTo(map);
                 
-                // Construct a sleek popup
+                // Risk-based color coding
+                let riskColor = '#2ECC71'; // Safe
+                if(person.crevasseRisk === 'WARNING') riskColor = '#F39C12';
+                if(person.crevasseRisk === 'DANGER') riskColor = '#E74C3C';
+
+                const customIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color:${riskColor}; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px ${riskColor};"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                const marker = L.marker([person.lastLatitude, person.lastLongitude], {icon: customIcon}).addTo(map);
+                
                 let popupContent = `
-                    <div style="background:#0D1B2A; color:#fff; padding:10px; border-radius:4px; border:1px solid #85C1E9;">
-                        <h4 style="margin:0 0 5px 0; color:#85C1E9;">${person.name}</h4>
-                        <p style="margin:0; font-size:12px;"><strong>Status:</strong> ${person.currentStatus || 'UNKNOWN'}</p>
-                        <p style="margin:0; font-size:12px;"><strong>Role:</strong> ${person.role}</p>
+                    <div style="background:#000; color:#fff; padding:15px; border-radius:8px; border:2px solid ${riskColor}; font-family:monospace;">
+                        <h4 style="margin:0 0 10px 0; color:${riskColor};">${person.name}</h4>
+                        <p style="margin:2px 0;"><strong>Role:</strong> ${person.role}</p>
+                        <p style="margin:2px 0;"><strong>Vehicle:</strong> ${person.assignedVehicle || 'On Foot'}</p>
+                        <p style="margin:2px 0;"><strong>Crevasse Risk:</strong> ${person.crevasseRisk || 'SAFE'}</p>
+                        <p style="margin:2px 0;"><strong>Last Ping:</strong> ${person.createdAt ? new Date(person.createdAt).toLocaleString() : 'Just now'}</p>
                     </div>
                 `;
                 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0D1B2A">
 </head>
-<body>
+<body class="oled-theme">
 
     <div class="app-container">
         <!-- Sidebar -->
@@ -41,7 +41,7 @@
                     box-shadow: 0px 10px 30px rgba(231, 76, 60, 0.4);
                     transition: transform 0.1s;
                 " onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-                    🚨 SOS 🚨
+                    ðŸš¨ SOS ðŸš¨
                 </button>
                 <p style="margin-top: 20px; color: #BDC3C7; font-size: 1.2rem;">
                     <strong>THICK GLOVE OPTIMIZED:</strong> TAP ANYWHERE ON THE RED PANEL
@@ -256,8 +256,14 @@
         setInterval(loadEmergencies, 10000); 
 
     </script>
+<script src="js/db.js"></script>
+<script src="js/advanced-sos.js"></script>
+<script src="js/global-ui.js"></script>
 </body>
 </html>
+
+
+
 
 
 

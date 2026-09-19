@@ -5,5 +5,6 @@ public enum AssetCategory {
     FOOD,
     FUEL,
     MEDICAL,
-    CONSTRUCTION
+    CONSTRUCTION,
+    VEHICLE
 }
