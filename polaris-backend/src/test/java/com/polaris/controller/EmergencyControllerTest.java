@@ -39,14 +39,23 @@ public class EmergencyControllerTest {
     private JwtService jwtService;
 
     @Test
-    @WithMockUser
-    public void testShipRouting_LatitudeGreaterThanMinus60() throws Exception {
-        Emergency emergency = new Emergency();
-        emergency.setType(EmergencyType.MEDICAL);
-        emergency.setSeverity(EmergencySeverity.CRITICAL);
-        emergency.setLatitude(-55.0); // Ship in Southern Ocean
-        emergency.setLongitude(70.0);
-        emergency.setReportedBy(10L); // Using ID instead of String
+    @WithMockUser(roles = "SCIENTIST")
+    void testTriggerSOS() throws Exception {
+        Emergency request = new Emergency();
+        request.setType(EmergencyType.MEDICAL);
+        request.setSeverity(EmergencySeverity.CRITICAL);
+        request.setDescription("Blizzard trap!");
+        request.setLatitude(-70.7667);
+        request.setLongitude(11.7333);
+
+        Emergency saved = new Emergency();
+        saved.setId(1L);
+        saved.setType(EmergencyType.MEDICAL);
+        saved.setSeverity(EmergencySeverity.CRITICAL);
+        saved.setDescription("Blizzard trap!");
+        saved.setStatus(EmergencyStatus.ACTIVE);
+        saved.setLatitude(-70.7667);
+        saved.setLongitude(11.7333);
 
         Mockito.when(emergencyRepository.save(Mockito.any(Emergency.class))).thenReturn(emergency);
 
