@@ -1,4 +1,4 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
   polaris-db:
@@ -28,7 +28,7 @@ services:
       - "8080:8080"
     environment:
       # Override the application.properties to point to the docker MySQL container instead of localhost
-      - SPRING_DATASOURCE_URL=jdbc:mysql://polaris-db:3306/polaris_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_URL=jdbc:mysql://polaris-db:3306/polaris_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=Avinash786@#$
       # Externalize JWT secret for production best practices
@@ -39,3 +39,4 @@ services:
 
 volumes:
   polaris_db_data:
+

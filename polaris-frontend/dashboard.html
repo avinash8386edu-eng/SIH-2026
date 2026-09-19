@@ -21,7 +21,7 @@
         </div>
 
         <div class="main-content">
-            <h2 style="color: #00E5FF;">ðŸ—ºï¸ Expedition Planning & Telemetry</h2>
+            <h2 style="color: #00E5FF;">🗺️ Expedition Planning & Telemetry</h2>
             
             <div class="dashboard-grid" style="padding:0; grid-template-columns: 2fr 1fr;">
                 
@@ -29,12 +29,12 @@
                 <div class="card heavy-ui" style="background:#0a0a0a; border-color:#3498DB; position:relative; overflow:hidden;">
                     <h3 style="color:#3498DB; z-index:10; position:relative;">MAITRI STATION: 3D DIGITAL TWIN</h3>
                     <div id="three-container" style="width: 100%; height: 350px; background: #000; border-radius: 8px;"></div>
-                    <button class="btn btn-primary" onclick="simulateFuelDrain()" style="position:absolute; bottom:20px; left:20px; z-index:10; background:#E74C3C; border:none;">⚠️ Simulate HSD Fuel Leak</button>
+                    <button class="btn btn-primary" onclick="simulateFuelDrain()" style="position:absolute; bottom:20px; left:20px; z-index:10; background:#E74C3C; border:none;">âš ï¸ Simulate HSD Fuel Leak</button>
                 </div>
 
                 <!-- AI Polar-GPT -->
                 <div class="card" style="background:#111; display:flex; flex-direction:column;">
-                    <h3 style="color:#F1C40F;">🤖 POLAR-GPT AI COMMAND</h3>
+                    <h3 style="color:#F1C40F;">ðŸ¤– POLAR-GPT AI COMMAND</h3>
                     <p style="font-size:0.85em; color:#888;">LLM Analytics Engine (Gemini Subsystem)</p>
                     <div id="gpt-chat" style="flex-grow:1; background:#000; border:1px solid #333; padding:10px; overflow-y:auto; font-family:monospace; font-size:13px; margin-bottom:10px; border-radius:5px; height: 250px;">
                         <div style="color:#2ECC71;">> System Online. Type to query Maitri/Bharati Logistics Ledger.</div>
@@ -47,7 +47,7 @@
             </div>
 
             <div class="card" style="background:#111; margin-top:20px; border-left:4px solid #8E44AD;">
-                <h3 style="color:#8E44AD;">🤖 AUTONOMOUS AI ACTIVITY LOG (SMART AUTOMATION)</h3>
+                <h3 style="color:#8E44AD;">ðŸ¤– AUTONOMOUS AI ACTIVITY LOG (SMART AUTOMATION)</h3>
                 <p style="color:#aaa; font-size:0.9em;">Background processes managed autonomously by POLARIS AI to optimize power, logistics, and routing.</p>
                 
                 <div style="background:#050505; border:1px solid #333; padding:10px; font-family:monospace; font-size:12px; height:120px; overflow-y:hidden; color:#2ECC71;" id="auto-log">
@@ -212,7 +212,7 @@
         }
 
         function simulateFuelDrain() {
-            alert("âš ï¸ SYSTEM ALERT: Major HSD Fuel line fracture detected! AI auto-rerouting valves...");
+            alert("Ã¢Å¡Â Ã¯Â¸Â SYSTEM ALERT: Major HSD Fuel line fracture detected! AI auto-rerouting valves...");
             const logDiv = document.getElementById('auto-log');
             if(logDiv) {
                 const time = new Date().toLocaleTimeString('en-US', {hour12:false});
@@ -235,5 +235,6 @@
     </script>
 </body>
 </html>
+
 
 

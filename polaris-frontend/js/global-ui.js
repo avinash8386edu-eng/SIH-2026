@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     // Remove old widget if exists
     const oldW = document.getElementById('network-sync-widget');
     if (oldW) oldW.remove();
@@ -22,16 +22,15 @@ function injectGlobalUI() {
     vsatBanner.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 35px; line-height: 35px; text-align: center; font-weight: 900; letter-spacing: 1.5px; z-index: 10000; transition: all 0.3s ease; text-transform: uppercase; font-size: 14px;';
     document.body.prepend(vsatBanner);
 
-    // Update function for VSAT banner
     function updateVSATBanner() {
         if (navigator.onLine) {
             vsatBanner.style.backgroundColor = '#2ECC71';
             vsatBanner.style.color = '#000';
-            vsatBanner.innerText = '🟢 VSAT ONLINE: SATELLITE LINK STABLE - QUEUE SYNCED';
+            vsatBanner.innerText = '📡 VSAT ONLINE: SATELLITE LINK STABLE - QUEUE SYNCED';
         } else {
             vsatBanner.style.backgroundColor = '#E74C3C';
             vsatBanner.style.color = '#FFF';
-            vsatBanner.innerText = '🔴 VSAT OFFLINE: P2P MESH & INDEXEDDB QUEUING ACTIVATED';
+            vsatBanner.innerText = '⚠️ VSAT OFFLINE: P2P MESH & INDEXEDDB QUEUING ACTIVATED';
         }
     }
     window.addEventListener('online', updateVSATBanner);
@@ -131,7 +130,7 @@ async function fetchNotifications() {
             drop.innerHTML = '<div class="notif-item">No upcoming events or winter expiry alerts.</div>';
         }
     } catch(e) {
-        console.error("Notifications fetch failed", e);
+        console.warn("Notifications fetch failed (Mock Mode)", e);
     }
 }
 
@@ -140,14 +139,15 @@ async function updateNetworkWidget() {
     if (!widget) return;
 
     if (navigator.onLine) {
-        widget.innerHTML = '<span class="status-dot online"></span> 🟢 Online';
+        widget.innerHTML = '<span class="status-dot online"></span> 🌐 Online';
         widget.style.borderColor = '#333';
+        widget.style.color = '#FFF';
         
         if (typeof syncOfflineSOS === 'function') {
             await syncOfflineSOS();
         }
     } else {
-        widget.innerHTML = '<span class="status-dot offline"></span> 🔴 ECIL VSAT Link Lost';
+        widget.innerHTML = '<span class="status-dot offline"></span> ⚠️ ECIL VSAT Link Lost';
         widget.style.borderColor = '#E74C3C';
         widget.style.color = '#E74C3C';
     }
@@ -156,12 +156,12 @@ async function updateNetworkWidget() {
         try {
             const queue = await getOfflineSOS();
             if (queue && queue.length > 0) {
-                widget.innerHTML += ` | ⏳ ${queue.length} Pending`;
+                widget.innerHTML += ` | 🔄 ${queue.length} Pending`;
                 widget.style.borderColor = '#F39C12';
                 widget.style.color = '#F39C12';
             }
         } catch (e) {
-            console.error("Could not check offline queue", e);
+            console.warn("Could not check offline queue", e);
         }
     }
 }

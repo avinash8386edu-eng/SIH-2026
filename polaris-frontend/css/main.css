@@ -429,3 +429,7 @@ body.blizzard-mode .timeline-item.done::before {
     background: #00FF00 !important;
     border-color: #00FF00 !important;
 }
+
+.dark-map {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
