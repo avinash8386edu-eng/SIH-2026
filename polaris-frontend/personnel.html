@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Advanced Live Personnel Tracker</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="theme-color" content="#000000">
+    <style>
+        .radar-container { position: relative; overflow: hidden; border: 2px solid #00E5FF; border-radius: 8px; }
+        .pulse-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px currentColor; animation: pulse-ring 2s infinite; }
+        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 15px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+        .base-station { color: #00E5FF; font-weight: bold; text-shadow: 0 0 5px #00E5FF; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 4px; border: 1px solid #00E5FF; }
+        .vehicle-icon { font-size: 20px; position:absolute; top:-25px; left:-5px; }
+        
+        /* New Weather & Logistics Panels */
+        .weather-panel { position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.85); border: 2px solid #E74C3C; padding: 15px; border-radius: 8px; color: white; width: 250px; }
+        .blizzard-warn { color: #F1C40F; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-card { background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #00E5FF; }
+    </style>
+</head>
+<body class="oled-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html" class="active">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+        </div>
+
+        <div class="main-content">
+            <div style="display:flex; justify-content:space-between;">
+                <h2 style="color: #00E5FF;">??????? ISRO Live Radar & Personnel Status</h2>
+                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">???? Export Ministry Excel Report</button>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card" style="border-left-color:#F1C40F;">
+                    <h4>???? On Traverse (Active)</h4>
+                    <h2 id="traverseCount">0</h2>
+                </div>
+                <div class="stat-card" style="border-left-color:#E67E22;">
+                    <h4>???? Quarantine / Acclimatization</h4>
+                    <h2 id="quarantineCount">0</h2>
+                </div>
+                <div class="stat-card" style="border-left-color:#3498DB;">
+                    <h4>???? Transit (On Vessel)</h4>
+                    <h2 id="vesselCount">0</h2>
+                </div>
+            </div>
+
+            <div class="card radar-container heavy-ui" style="background:#111; padding:0; margin-top:20px;">
+                <div id="radar-map" style="height: 500px; width: 100%; background:#000;"></div>
+                
+                <!-- Live Blizzard Prediction Widget -->
+                <div class="weather-panel">
+                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">?????? NRSC Weather</h3>
+                    <p style="margin:5px 0;"><strong>Temp:</strong> -42??C (Feels -55??C)</p>
+                    <p style="margin:5px 0;"><strong>Wind:</strong> 110 km/h (Katabatic)</p>
+                    <p style="margin:5px 0;"><strong>Visibility:</strong> 200m</p>
+                    <hr style="border-color:#555;">
+                    <p class="blizzard-warn">?????? BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
+                </div>
+            </div>
+
+            <div class="card" style="background:#111; margin-top:20px;">
+                <h3>Status Roster (Quarantine, Vessel, Traverse)</h3>
+                <table id="personnelTable">
+                    <thead>
+                        <tr>
+                            <th>Scientist Name</th>
+                            <th>Status (Location)</th>
+                            <th>Purpose / Task</th>
+                            <th>Vehicle</th>
+                            <th>Live Telemetry (SpO2/BPM)</th>
+                            <th>Expected Return (ETA)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="personnelTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map, traverseMarker;
+        
+        function initMap() {
+            map = L.map('radar-map').setView([-70.7661, 11.7322], 6); // Maitri View
+            
+            // ISRO / NRSC Dark Theme TileLayer
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; POLARIS Radar Systems (Mock)',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add Maitri and Bharati Station Markers
+            L.marker([-70.7661, 11.7322]).addTo(map).bindPopup("<b>Maitri Station (HQ)</b>");
+            L.marker([-69.4069, 76.1953]).addTo(map).bindPopup("<b>Bharati Station</b>");
+
+            // Add 50km Geofence Safe Zone
+            L.circle([-70.7661, 11.7322], {
+                color: '#2ECC71',
+                fillColor: '#2ECC71',
+                fillOpacity: 0.1,
+                radius: 50000
+            }).addTo(map).bindPopup("50km Safe Perimeter");
+
+            // Add Crevasse Danger Zone
+            L.polygon([
+                [-71.0, 11.0],
+                [-71.5, 12.0],
+                [-71.2, 13.0]
+            ], {
+                color: '#E74C3C',
+                fillColor: '#E74C3C',
+                fillOpacity: 0.2
+            }).addTo(map).bindPopup("CRITICAL: Crevasse Hazard Zone");
+        }
+
+        function getDynamicStatus(id, name) {
+            // Mock logic to simulate various states
+            if (name.includes("Yogesh")) {
+                return { status: 'TRAVERSE', label: 'On Ice Shelf', color: '#F39C12', purpose: 'Geological Core Extraction', vehicle: 'PistenBully 300', etaTimestamp: Date.now() - 600000, etaLabel: '10 Mins Ago' };
+            } else if (name.includes("Showmitra")) {
+                return { status: 'QUARANTINE', label: 'In Quarantine', color: '#8E44AD', purpose: 'Pre-Deployment Acclimatization', vehicle: 'Station Bay 4', etaTimestamp: null, etaLabel: null };
+            } else {
+                return { status: 'VESSEL', label: 'On Vessel', color: '#3498DB', purpose: 'Logistics Offloading', vehicle: 'MV Vasiliy Golovnin', etaTimestamp: null, etaLabel: null };
+            }
+        }
+
+        async function loadPersonnel() {
+            try {
+                const personnel = await apiCall('/personnel');
+                const tbody = document.getElementById('personnelTableBody');
+                tbody.innerHTML = '';
+                
+                let tCount=0, qCount=0, vCount=0;
+
+                personnel.forEach((p, index) => {
+                    if (p.role === 'COMMANDER') return;
+
+                    // Dynamically mock status for hackathon realism based on ID
+                    let statusObj = getDynamicStatus(p.id, p.name);
+                    
+                    if (statusObj.status === 'TRAVERSE') tCount++;
+                    if (statusObj.status === 'QUARANTINE') qCount++;
+                    if (statusObj.status === 'VESSEL') vCount++;
+
+                    let etaStyle = '';
+                    let actionBtn = '-';
+                    
+                    if (statusObj.status === 'TRAVERSE') {
+                        // Check if ETA is breached
+                        const etaTime = new Date(statusObj.etaTimestamp);
+                        if (Date.now() > etaTime.getTime()) {
+                            etaStyle = 'color:#E74C3C; font-weight:bold; animation: blink 1s infinite;';
+                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">???? TRIGGER AUTO-SOS</button>`;
+                        } else {
+                            actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
+                        }
+                    }
+
+                    // Mock Vitals Logic
+                    let baseHr = 75 + Math.floor(Math.random()*15);
+                    let baseSp = 95 + Math.floor(Math.random()*5);
+                    let baseTemp = (36.5 + (Math.random()*0.5)).toFixed(1);
+                    
+                    let vitalsHtml = `<span id="vital-hr-${p.id}">?????? ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">???? ${baseSp}%</span> | ??????? ${baseTemp}??C`;
+
+                    tbody.innerHTML += `
+                        <tr id="row-user-${p.id}">
+                            <td>${p.name}</td>
+                            <td><span class="badge" style="background:${statusObj.color};">${statusObj.label}</span></td>
+                            <td>${statusObj.purpose}</td>
+                            <td>${statusObj.vehicle}</td>
+                            <td style="font-family:monospace; font-size:13px;">${vitalsHtml}</td>
+                            <td style="${etaStyle}">${statusObj.etaLabel || 'N/A'}</td>
+                            <td>
+                                ${actionBtn}
+                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">?????? Sim Vitals</button>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Map Plotting for Traverse
+                    if(statusObj.status === 'TRAVERSE' && p.lastLatitude) {
+                        const icon = L.divIcon({ className: 'radar-marker' });
+                        if(traverseMarker) map.removeLayer(traverseMarker);
+                        traverseMarker = L.marker([p.lastLatitude, p.lastLongitude], {icon}).addTo(map)
+                            .bindPopup(`<b>${p.name}</b><br>Vehicle: ${statusObj.vehicle}<br>Speed: 15 km/h`);
+                    }
+                });
+
+                document.getElementById('traverseCount').innerText = tCount;
+                document.getElementById('quarantineCount').innerText = qCount;
+                document.getElementById('vesselCount').innerText = vCount;
+
+            } catch(e) { console.error(e); }
+        }
+
+                
+
+        function triggerAutoSOS(name) {
+            alert(`Manual Override: Sent high-priority distress signal to ${name}'s vehicle and Base Commander!`);
+        }
+
+        function exportToExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+            XLSX.writeFile(wb, filename + '.xlsx');
+            alert("Ministry Excel Report Generated Successfully!");
+        }
+
+        initMap(); loadPersonnel();
+        setInterval(loadPersonnel, 30000); // Check ETA every 30s
+    </script>
+</body>
+</html>
+
+

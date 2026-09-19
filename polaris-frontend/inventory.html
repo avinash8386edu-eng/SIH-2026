@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Smart Inventory Ledger</title>
+    <link rel="stylesheet" href="css/main.css">
+    <meta name="theme-color" content="#000000">
+</head>
+<body class="oled-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
+            <a href="inventory.html" class="active">Inventory</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+        </div>
+
+        <div class="main-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color: #00E5FF;">❄️ Smart Inventory & Burn Rate Ledger</h2>
+                <div>
+                    <button class="btn" style="background:#8E44AD; color:#fff;" onclick="simulateVesselArrival()">⚓ Simulate Vessel Arrival (Auto-Update)</button>
+                    <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('inventoryTable', 'Polaris_Inventory_Report')">📊 Export Excel</button>
+                </div>
+            </div>
+            
+            <div class="card" style="background:#111;">
+                <h3 style="color:#F1C40F;">WINTER INVENTORY GUARD</h3>
+                <p>System enforces FIFO and calculates Burn Rate (Days Remaining based on daily base consumption).</p>
+                
+                <div class="grid heavy-ui" style="grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                    <!-- Line Chart for Fuel Depletion -->
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #fff; margin-bottom: 10px;">6-Month Fuel Burn Forecast (ATF & HSD)</h4>
+                        <div style="height: 250px;">
+                            <canvas id="burnRateChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Doughnut Chart for Categories -->
+                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #fff; margin-bottom: 10px;">Stock Distribution</h4>
+                        <div style="height: 250px;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="background:#111; margin-top:20px;">
+                <h3>Current Stock & Lifecycle (Maitri / Bharati)</h3>
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity (Units)</th>
+                            <th>Burn Rate (Est. Days Left)</th>
+                            <th>Storage Zone</th>
+                            <th>Status / Expiry</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script>
+        let burnRateChartInstance = null;
+        let categoryChartInstance = null;
+
+        async function loadInventory() {
+            try {
+                const items = await apiCall('/inventory');
+                const tbody = document.getElementById('inventoryTableBody');
+                tbody.innerHTML = '';
+                
+                const now = new Date();
+                items.sort((a,b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+
+                let fuelTotal = 0;
+                let foodTotal = 0;
+                let medTotal = 0;
+
+                items.forEach(item => {
+                    const exp = new Date(item.expiryDate);
+                    const diffMonths = (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30);
+                    
+                    let rowStyle = '';
+                    let statusText = 'HEALTHY';
+                    let expiryText = exp.toLocaleDateString();
+                    
+                    if (diffMonths < 0) {
+                        rowStyle = 'background: rgba(231, 76, 60, 0.5); opacity: 0.6;';
+                        statusText = 'EXPIRED';
+                    } else if (diffMonths <= 3) {
+                        rowStyle = 'background: rgba(241, 196, 15, 0.2); border-left: 4px solid #F1C40F;';
+                        statusText = '⚠️ EXPIRING SOON';
+                    }
+
+                    // Burn Rate Logic: Mock daily consumption based on category
+                    let dailyBurn = 1;
+                    if(item.category === 'FUEL') { dailyBurn = 200; fuelTotal++; }
+                    if(item.category === 'FOOD') { dailyBurn = 50; foodTotal++; }
+                    if(item.category === 'MEDICAL') { medTotal++; }
+                    const daysLeft = Math.floor(item.quantity / dailyBurn);
+                    
+                    let burnAlert = daysLeft < 30 ? `<span style="color:#E74C3C; font-weight:bold;">${daysLeft} Days (CRITICAL)</span>` : `${daysLeft} Days`;
+                    if (diffMonths < 0) burnAlert = '0 Days (Disposal Required)';
+
+                    tbody.innerHTML += `
+                        <tr style="${rowStyle}">
+                            <td><strong>${item.itemName}</strong></td>
+                            <td>${item.quantity} ${item.unit || ''}</td>
+                            <td>${burnAlert}</td>
+                            <td>${item.storageLocation}</td>
+                            <td style="${diffMonths <= 3 ? 'color:#F1C40F; font-weight:bold;' : ''}">${statusText} (${expiryText})</td>
+                            <td>
+                                <button onclick="useItem(${item.id})" class="btn btn-primary" style="padding:5px 10px;" ${diffMonths < 0 ? 'disabled' : ''}>Dispatch</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                updateCharts(items, fuelTotal, foodTotal, medTotal);
+            } catch(e) { console.error(e); }
+        }
+
+        function updateCharts(items, fuelCount, foodCount, medCount) {
+            // 1. Burn Rate Line Chart (Simulating Fuel Depletion)
+            const ctxBurn = document.getElementById('burnRateChart').getContext('2d');
+            if (burnRateChartInstance) burnRateChartInstance.destroy();
+            
+            // Extract just the fuel item for the demo (assuming the largest is HSD)
+            let hsdFuel = items.find(i => i.itemName.includes("High-Speed Diesel")) || {quantity: 350000};
+            let atfFuel = items.find(i => i.itemName.includes("Aviation Turbine")) || {quantity: 500};
+            
+            // Generate 6 month decay data (mock calculation)
+            let hsdData = [hsdFuel.quantity, hsdFuel.quantity - 30000, hsdFuel.quantity - 60000, hsdFuel.quantity - 95000, hsdFuel.quantity - 130000, hsdFuel.quantity - 170000];
+            let atfData = [atfFuel.quantity, atfFuel.quantity - 50, atfFuel.quantity - 150, atfFuel.quantity - 200, atfFuel.quantity - 300, atfFuel.quantity - 450];
+
+            burnRateChartInstance = new Chart(ctxBurn, {
+                type: 'line',
+                data: {
+                    labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'],
+                    datasets: [
+                        { label: 'HSD (Liters)', data: hsdData, borderColor: '#00E5FF', backgroundColor: 'rgba(0, 229, 255, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'ATF (Barrels)', data: atfData, borderColor: '#E74C3C', backgroundColor: 'rgba(231, 76, 60, 0.1)', fill: true, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#fff' } } },
+                    scales: {
+                        x: { ticks: { color: '#aaa' }, grid: { color: '#333' } },
+                        y: { ticks: { color: '#aaa' }, grid: { color: '#333' } }
+                    }
+                }
+            });
+
+            // 2. Category Distribution Doughnut Chart
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChartInstance) categoryChartInstance.destroy();
+            categoryChartInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fuel/Energy', 'Arctic Food', 'Medical Supplies'],
+                    datasets: [{
+                        data: [fuelCount, foodCount, medCount],
+                        backgroundColor: ['#00E5FF', '#2ECC71', '#E74C3C'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        async function useItem(id) {
+            alert(`Dispatching item ID ${id} following FIFO protocols.`);
+            loadInventory();
+        }
+
+        function simulateVesselArrival() {
+            alert("🚨 Store Manager Alert:\nMV Vasiliy Golovnin has docked at Ice Shelf.\n\nAutomated systems have successfully cross-checked Manifest AL-1403. Quantities for ATF Fuel and MRE Rations have been auto-updated in the Database!");
+            // Mock backend POST for restock
+            apiCall('/inventory', 'POST', {
+                itemName: "Winter Diesel (ATF) - Vessel Batch",
+                category: "FUEL",
+                quantity: 25000,
+                unit: "Liters",
+                minimumThreshold: 5000,
+                expiryDate: "2028-01-01",
+                storageLocation: "Bharati Fuel Dump",
+                expeditionId: 43
+            }).then(() => loadInventory());
+        }
+
+        function exportToExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+            XLSX.writeFile(wb, filename + '.xlsx');
+            alert("Ministry Excel Report Generated Successfully!");
+        }
+
+        loadInventory();
+    </script>
+</body>
+</html>
