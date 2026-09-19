@@ -99,141 +99,206 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let map, traverseMarker;
+    let map, traverseMarker;
+    let globalPersonnelData = [];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        loadPersonnel();
+    });
+    
+    function initMap() {
+        map = L.map('radar-map').setView([-70.7661, 11.7322], 6); // Maitri View
         
-        function initMap() {
-            map = L.map('radar-map').setView([-70.7661, 11.7322], 6); // Maitri View
+        // ISRO / NRSC Dark Theme TileLayer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            className: 'dark-map', attribution: '&copy; OpenStreetMap contributors',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add Maitri and Bharati Station Markers
+        L.marker([-70.7661, 11.7322]).addTo(map).bindPopup("<b>Maitri Station (HQ)</b>");
+        L.marker([-69.4069, 76.1953]).addTo(map).bindPopup("<b>Bharati Station</b>");
+
+        // Add 50km Geofence Safe Zone
+        L.circle([-70.7661, 11.7322], {
+            color: '#2ECC71',
+            fillColor: '#2ECC71',
+            fillOpacity: 0.1,
+            radius: 50000
+        }).addTo(map).bindPopup("50km Safe Perimeter");
+
+        // Add Crevasse Danger Zone
+        L.polygon([
+            [-71.0, 11.0],
+            [-71.5, 12.0],
+            [-71.2, 13.0]
+        ], {
+            color: '#E74C3C',
+            fillColor: '#E74C3C',
+            fillOpacity: 0.2
+        }).addTo(map).bindPopup("CRITICAL: Crevasse Hazard Zone");
+    }
+
+    function getDynamicStatus(person) {
+        // Mock logic using real API data statuses
+        if (person.currentStatus === 'ON_TRAVERSE' || person.name.includes("Yogesh")) {
+            return { status: 'TRAVERSE', label: 'On Ice Shelf', color: '#F39C12', purpose: 'Geological Core Extraction', vehicle: 'PistenBully 300', etaTimestamp: Date.now() - 600000, etaLabel: '10 Mins Ago' };
+        } else if (person.currentStatus === 'QUARANTINE' || person.name.includes("Showmitra")) {
+            return { status: 'QUARANTINE', label: 'In Quarantine', color: '#8E44AD', purpose: 'Pre-Deployment Acclimatization', vehicle: 'Station Bay 4', etaTimestamp: null, etaLabel: null };
+        } else {
+            return { status: 'VESSEL', label: 'On Vessel', color: '#3498DB', purpose: 'Logistics Offloading', vehicle: 'MV Vasiliy Golovnin', etaTimestamp: null, etaLabel: null };
+        }
+    }
+
+    async function loadPersonnel() {
+        try {
+            const personnel = await apiCall('/personnel');
+            globalPersonnelData = personnel; // For modal
             
-            // ISRO / NRSC Dark Theme TileLayer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                className: 'dark-map', attribution: '&copy; OpenStreetMap contributors',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
+            const tbody = document.getElementById('personnelTableBody');
+            tbody.innerHTML = '';
+            
+            let traverseCount = 0;
+            let quarantineCount = 0;
+            let vesselCount = 0;
 
-            // Add Maitri and Bharati Station Markers
-            L.marker([-70.7661, 11.7322]).addTo(map).bindPopup("<b>Maitri Station (HQ)</b>");
-            L.marker([-69.4069, 76.1953]).addTo(map).bindPopup("<b>Bharati Station</b>");
-
-            // Add 50km Geofence Safe Zone
-            L.circle([-70.7661, 11.7322], {
-                color: '#2ECC71',
-                fillColor: '#2ECC71',
-                fillOpacity: 0.1,
-                radius: 50000
-            }).addTo(map).bindPopup("50km Safe Perimeter");
-
-            // Add Crevasse Danger Zone
-            L.polygon([
-                [-71.0, 11.0],
-                [-71.5, 12.0],
-                [-71.2, 13.0]
-            ], {
-                color: '#E74C3C',
-                fillColor: '#E74C3C',
-                fillOpacity: 0.2
-            }).addTo(map).bindPopup("CRITICAL: Crevasse Hazard Zone");
-        }
-
-        function getDynamicStatus(id, name) {
-            // Mock logic to simulate various states
-            if (name.includes("Yogesh")) {
-                return { status: 'TRAVERSE', label: 'On Ice Shelf', color: '#F39C12', purpose: 'Geological Core Extraction', vehicle: 'PistenBully 300', etaTimestamp: Date.now() - 600000, etaLabel: '10 Mins Ago' };
-            } else if (name.includes("Showmitra")) {
-                return { status: 'QUARANTINE', label: 'In Quarantine', color: '#8E44AD', purpose: 'Pre-Deployment Acclimatization', vehicle: 'Station Bay 4', etaTimestamp: null, etaLabel: null };
-            } else {
-                return { status: 'VESSEL', label: 'On Vessel', color: '#3498DB', purpose: 'Logistics Offloading', vehicle: 'MV Vasiliy Golovnin', etaTimestamp: null, etaLabel: null };
-            }
-        }
-
-        async function loadPersonnel() {
-            try {
-                const personnel = await apiCall('/personnel');
-                const tbody = document.getElementById('personnelTableBody');
-                tbody.innerHTML = '';
+            personnel.forEach(p => {
+                const info = getDynamicStatus(p);
                 
-                let tCount=0, qCount=0, vCount=0;
+                if(info.status === 'TRAVERSE') traverseCount++;
+                if(info.status === 'QUARANTINE') quarantineCount++;
+                if(info.status === 'VESSEL') vesselCount++;
 
-                personnel.forEach((p, index) => {
-                    if (p.role === 'COMMANDER') return;
-
-                    // Dynamically mock status for hackathon realism based on ID
-                    let statusObj = getDynamicStatus(p.id, p.name);
-                    
-                    if (statusObj.status === 'TRAVERSE') tCount++;
-                    if (statusObj.status === 'QUARANTINE') qCount++;
-                    if (statusObj.status === 'VESSEL') vCount++;
-
-                    let etaStyle = '';
-                    let actionBtn = '-';
-                    
-                    if (statusObj.status === 'TRAVERSE') {
-                        // Check if ETA is breached
-                        const etaTime = new Date(statusObj.etaTimestamp);
-                        if (Date.now() > etaTime.getTime()) {
-                            etaStyle = 'color:#E74C3C; font-weight:bold; animation: blink 1s infinite;';
-                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">🚨 TRIGGER AUTO-SOS</button>`;
-                        } else {
-                            actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
-                        }
-                    }
-
-                    // Mock Vitals Logic
-                    let baseHr = 75 + Math.floor(Math.random()*15);
-                    let baseSp = 95 + Math.floor(Math.random()*5);
-                    let baseTemp = (36.5 + (Math.random()*0.5)).toFixed(1);
-                    
-                    let vitalsHtml = `<span id="vital-hr-${p.id}">❤️ ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">🫁 ${baseSp}%</span> | 🌡️ ${baseTemp}°C`;
-
-                    tbody.innerHTML += `
-                        <tr id="row-user-${p.id}">
-                            <td>${p.name}</td>
-                            <td><span class="badge" style="background:${statusObj.color};">${statusObj.label}</span></td>
-                            <td>${statusObj.purpose}</td>
-                            <td>${statusObj.vehicle}</td>
-                            <td style="font-family:monospace; font-size:13px;">${vitalsHtml}</td>
-                            <td style="${etaStyle}">${statusObj.etaLabel || 'N/A'}</td>
-                            <td>
-                                ${actionBtn}
-                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">⚠️ Sim Vitals</button>
-                            </td>
-                        </tr>
-                    `;
-
-                    // Map Plotting for Traverse
-                    if(statusObj.status === 'TRAVERSE' && p.lastLatitude) {
-                        const icon = L.divIcon({ className: 'radar-marker' });
-                        if(traverseMarker) map.removeLayer(traverseMarker);
-                        traverseMarker = L.marker([p.lastLatitude, p.lastLongitude], {icon}).addTo(map)
-                            .bindPopup(`<b>${p.name}</b><br>Vehicle: ${statusObj.vehicle}<br>Speed: 15 km/h`);
-                    }
-                });
-
-                document.getElementById('traverseCount').innerText = tCount;
-                document.getElementById('quarantineCount').innerText = qCount;
-                document.getElementById('vesselCount').innerText = vCount;
-
-            } catch(e) { console.error(e); }
-        }
-
+                let etaHtml = `<span style="color:#777;">N/A</span>`;
+                let actionBtn = `<span style="color:#777;">None</span>`;
                 
+                if (info.etaTimestamp) {
+                    const missedBy = Date.now() - info.etaTimestamp;
+                    if (missedBy > 0) {
+                        etaHtml = `<span style="color:#E74C3C; font-weight:bold;">MISSED BY ${info.etaLabel}</span>`;
+                        actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS(event, '${p.name}')">🚨 TRIGGER AUTO-SOS</button>`;
+                    } else {
+                        actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
+                    }
+                }
 
-        function triggerAutoSOS(name) {
-            alert(`Manual Override: Sent high-priority distress signal to ${name}'s vehicle and Base Commander!`);
+                // Vitals logic based on name to mock stability
+                let baseHr = 72 + (p.id % 10);
+                let baseSp = 98 - (p.id % 3);
+                let baseTemp = 36.5;
+                if(p.name.includes('Yogesh')) { baseHr = 135; baseSp = 89; baseTemp = 35.1; } // Mock distress
+
+                let vitalsHtml = `<span id="vital-hr-${p.id}">❤️ ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">🫁 ${baseSp}%</span> | 🌡️ ${baseTemp}°C`;
+
+                tbody.innerHTML += `
+                    <tr style="cursor:pointer;" onclick="openPersonnelModal(${p.id})">
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.role}</td>
+                        <td style="color:${info.color}; font-weight:bold;">${info.label}</td>
+                        <td>${info.purpose}<br><small style="color:#aaa;">${info.vehicle}</small></td>
+                        <td>${etaHtml}</td>
+                        <td>${actionBtn}</td>
+                        <td>
+                            ${vitalsHtml}
+                            <br><button onclick="simulateCardiacEvent(event, ${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">⚠️ Sim Vitals</button>
+                        </td>
+                    </tr>
+                `;
+
+                // Add marker to map
+                if (p.lastLatitude && p.lastLongitude) {
+                    const markerColor = info.status === 'TRAVERSE' ? '#F39C12' : '#3498DB';
+                    const customIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background-color:${markerColor}; width:15px; height:15px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px ${markerColor}; cursor:pointer;" onclick="openPersonnelModal(${p.id})"></div>`,
+                        iconSize: [15, 15],
+                        iconAnchor: [7, 7]
+                    });
+                    
+                    const marker = L.marker([p.lastLatitude, p.lastLongitude], {icon: customIcon}).addTo(map);
+                    marker.bindPopup(`<b>${p.name}</b><br>${info.label}<br><button onclick="openPersonnelModal(${p.id})" style="margin-top:5px; padding:3px; background:#00E5FF; border:none; cursor:pointer;">Deep Telemetry</button>`);
+                }
+            });
+
+            document.getElementById('traverseCount').innerText = traverseCount;
+            document.getElementById('quarantineCount').innerText = quarantineCount;
+            document.getElementById('vesselCount').innerText = vesselCount;
+
+        } catch(e) {
+            console.error("Failed loading personnel:", e);
         }
+    }
 
-        function exportToExcel(tableId, filename) {
-            const table = document.getElementById(tableId);
-            const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
-            XLSX.writeFile(wb, filename + '.xlsx');
-            alert("Ministry Excel Report Generated Successfully!");
-        }
+    function exportToExcel(tableId, filename) {
+        const table = document.getElementById(tableId);
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Sheet1"});
+        XLSX.writeFile(wb, filename + '.xlsx');
+    }
 
-        initMap(); loadPersonnel();
-        setInterval(loadPersonnel, 30000); // Check ETA every 30s
-    </script>
+    window.triggerAutoSOS = function(event, name) {
+        if(event) event.stopPropagation();
+        alert(`🚨 AUTO-SOS DISPATCHED FOR: ${name}\n\nStation Commander and NCPOR Goa have been alerted. Satellite channel opened.`);
+        if (typeof handleSOSClick === 'function') handleSOSClick();
+    }
+
+    window.simulateCardiacEvent = function(event, id, name) {
+        if(event) event.stopPropagation();
+        const hrElem = document.getElementById(`vital-hr-${id}`);
+        const spElem = document.getElementById(`vital-sp-${id}`);
+        
+        hrElem.innerHTML = `<span style="color:#E74C3C; font-weight:bold;">❤️ 165 BPM (TACHYCARDIA)</span>`;
+        spElem.innerHTML = `<span style="color:#E74C3C; font-weight:bold;">🫁 82% (HYPOXIA)</span>`;
+        
+        setTimeout(() => {
+            alert(`⚠️ CRITICAL MEDICAL ALERT ⚠️\n\n${name} is experiencing severe tachycardia (165 BPM) and hypoxia (82% SpO2).\nDeploying Med-Evac Heli-1 immediately.`);
+        }, 500);
+    }
+
+    window.openPersonnelModal = function(id) {
+        const person = globalPersonnelData.find(p => p.id === id);
+        if(!person) return;
+
+        const info = getDynamicStatus(person);
+        const modal = document.getElementById('deepPersonnelModal');
+        const mTitle = document.getElementById('pModalTitle');
+        const mContent = document.getElementById('pModalContent');
+        
+        mTitle.innerText = `Telemetry: ${person.name}`;
+        
+        const batt = Math.floor(Math.random() * 40) + 10;
+        const battColor = batt < 20 ? '#E74C3C' : '#2ECC71';
+
+        mContent.innerHTML = `
+            <table style="width:100%; border-collapse:collapse; color:#fff;">
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Role / ID:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${person.role} / P-${person.id}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Mission Status:</strong></td><td style="padding:8px; border-bottom:1px solid #333; color:${info.color}; font-weight:bold;">${info.label}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Assigned Vehicle:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${info.vehicle}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>GPS Battery:</strong></td><td style="padding:8px; border-bottom:1px solid #333; color:${battColor}; font-weight:bold;">${batt}%</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Lat / Lng:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${person.lastLatitude}, ${person.lastLongitude}</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Last Ping:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">${new Date().toLocaleTimeString()} (via Iridium)</td></tr>
+                <tr><td style="padding:8px; border-bottom:1px solid #333;"><strong>Suit Temp:</strong></td><td style="padding:8px; border-bottom:1px solid #333;">Internal: 36°C | External: -42°C</td></tr>
+            </table>
+            <button onclick="triggerAutoSOS(null, '${person.name}')" style="margin-top:20px; width:100%; background:#E74C3C; color:#fff; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">INITIATE TARGETED MED-EVAC</button>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+</script>
+    <!-- Deep Personnel Modal -->
+    <div id="deepPersonnelModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center;">
+        <div style="background:#1a1a1a; border:2px solid #00E5FF; padding:30px; border-radius:10px; min-width:400px; color:#fff; position:relative;">
+            <button onclick="document.getElementById('deepPersonnelModal').style.display='none'" style="position:absolute; top:10px; right:10px; background:red; color:white; border:none; border-radius:3px; cursor:pointer; padding:5px 10px;">X</button>
+            <h2 id="pModalTitle" style="color:#00E5FF; margin-top:0;">Personnel Bio-Telemetry</h2>
+            <hr style="border-color:#333;" />
+            <div id="pModalContent" style="margin-top:20px; line-height:1.6;"></div>
+        </div>
+    </div>
 </body>
 </html>
+
+
 
 
 
