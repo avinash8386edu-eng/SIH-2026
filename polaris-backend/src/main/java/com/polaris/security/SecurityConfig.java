@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Permit all HTTP methods (GET, POST, OPTIONS, etc.) for /api/auth/**
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/reports/**").permitAll()
+                        .requestMatchers("/api/intelligence/**").permitAll()
+                        .requestMatchers("/api/satellite/**").permitAll()
                         .requestMatchers("/ws-emergency/**").permitAll()
                         .anyRequest().authenticated()
                 )

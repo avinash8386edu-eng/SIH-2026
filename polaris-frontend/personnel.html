@@ -20,7 +20,7 @@
         @keyframes blink { 50% { opacity: 0; } }
 
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .stat-card { background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #00E5FF; }
+        .stat-card { background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; border-left: 4px solid #00E5FF; }
     </style>
 </head>
 <body class="oled-theme">
@@ -32,6 +32,7 @@
             <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html">Inventory</a>
             <a href="personnel.html" class="active">Personnel Movement</a>
+            <a href="satellite.html">Satellite Routing</a>
             <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
@@ -232,7 +233,14 @@
         initMap(); loadPersonnel();
         setInterval(loadPersonnel, 30000); // Check ETA every 30s
     </script>
+    <!-- WebSocket Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
 </body>
 </html>
+
+
+
 
 

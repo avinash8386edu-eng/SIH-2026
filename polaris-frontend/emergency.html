@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -170,11 +170,30 @@
         });
 
         async function submitEmergency(payload) {
+            let finalMessage = payload.description || 'Location unavailable';
+            if (payload.latitude && payload.longitude) {
+                finalMessage += `\n[GPS: ${payload.latitude.toFixed(6)}, ${payload.longitude.toFixed(6)}]`;
+            }
+            
+            // Map frontend fields to backend Alert model
+            const backendPayload = {
+                alertType: payload.type || 'MEDICAL',
+                severity: payload.severity || 'CRITICAL',
+                title: payload.title || 'SOS EMERGENCY TRIGGERED',
+                message: finalMessage,
+                entityType: 'PERSONNEL',
+                entityId: payload.reportedBy || 1
+            };
+
             if(navigator.onLine) {
                 try {
-                    await apiCall('/emergency/sos', 'POST', payload);
-                    alert("Emergency Report Broadcasted!");
-                    loadEmergencies();
+                    const response = await apiCall('/alerts/sos', 'POST', backendPayload);
+                    if (response && response._offlineQueued) {
+                        alert("Network unstable. Emergency queued locally.");
+                    } else {
+                        alert("Emergency Report Broadcasted!");
+                        if (typeof loadEmergencies === 'function') loadEmergencies();
+                    }
                 } catch(e) {
                     queueOffline(payload);
                 }
@@ -259,8 +278,14 @@
 <script src="js/db.js"></script>
 <script src="js/advanced-sos.js"></script>
 <script src="js/global-ui.js"></script>
+    <!-- WebSocket Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
 </body>
 </html>
+
+
 
 
 

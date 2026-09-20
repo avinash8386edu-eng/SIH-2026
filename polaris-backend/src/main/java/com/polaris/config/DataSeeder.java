@@ -29,7 +29,12 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedUsers() {
-        if (userRepository.count() == 0) {
+        // HACKATHON DEMO MODE: Always reseed to ensure fresh BCrypt hashes
+        if (userRepository.count() > 0) {
+            userRepository.deleteAll();
+            System.out.println("🔄 Cleared stale user records for fresh demo seeding.");
+        }
+        {
             User admin = User.builder()
                     .name("Denney George (VU2DGR)")
                     .email("admin@polaris.com")

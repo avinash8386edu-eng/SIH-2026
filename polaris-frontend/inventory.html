@@ -16,6 +16,7 @@
             <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html" class="active">Inventory</a>
             <a href="personnel.html">Personnel Movement</a>
+            <a href="satellite.html">Satellite Routing</a>
             <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
@@ -28,13 +29,13 @@
                 </div>
             </div>
             
-            <div class="card" style="background:#111;">
+            <div class="card" >
                 <h3 style="color:#F1C40F;">WINTER INVENTORY GUARD</h3>
                 <p>System enforces FIFO and calculates Burn Rate (Days Remaining based on daily base consumption).</p>
                 
-                <div class="grid heavy-ui" style="grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                <div class="dashboard-grid heavy-ui" style="grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
                     <!-- Line Chart for Fuel Depletion -->
-                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                    <div class="card" style="padding: 15px; margin-bottom: 0;">
                         <h4 style="color: #fff; margin-bottom: 10px;">6-Month Fuel Burn Forecast (ATF & HSD)</h4>
                         <div style="height: 250px;">
                             <canvas id="burnRateChart"></canvas>
@@ -42,7 +43,7 @@
                     </div>
                     
                     <!-- Doughnut Chart for Categories -->
-                    <div style="background: #1a1a1a; padding: 15px; border-radius: 8px;">
+                    <div class="card" style="padding: 15px; margin-bottom: 0;">
                         <h4 style="color: #fff; margin-bottom: 10px;">Stock Distribution</h4>
                         <div style="height: 250px;">
                             <canvas id="categoryChart"></canvas>
@@ -223,5 +224,12 @@
 
         loadInventory();
     </script>
+    <!-- WebSocket Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
 </body>
 </html>
+
+
+

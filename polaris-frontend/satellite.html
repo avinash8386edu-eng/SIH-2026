@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Satellite Routing System</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="theme-color" content="#000000">
+    <style>
+        .map-container { position: relative; height: calc(100vh - 150px); width: 100%; border: 2px solid #00E5FF; border-radius: 8px; overflow: hidden; }
+        #satellite-map { height: 100%; width: 100%; background: #000; }
+        .controls-panel {
+            position: absolute; top: 10px; left: 50px; z-index: 1000;
+            background: rgba(0,0,0,0.85); border: 1px solid #00E5FF;
+            padding: 15px; border-radius: 8px; color: white; width: 300px;
+        }
+        .btn-action {
+            background-color: transparent; border: 1px solid #00E5FF;
+            color: #00E5FF; padding: 8px 15px; border-radius: 4px;
+            cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold;
+        }
+        .btn-action:hover { background-color: rgba(0, 229, 255, 0.2); }
+        .btn-danger { border-color: #ff3366; color: #ff3366; }
+        .btn-danger:hover { background-color: rgba(255, 51, 102, 0.2); }
+        .stats { margin-top: 10px; font-size: 0.9em; line-height: 1.5; color: #aaa; }
+        .stats span { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body class="oled-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <a href="dashboard.html">Expedition Planning</a>
+            <a href="cargo.html">Cargo Tracking</a>
+            <a href="inventory.html">Inventory</a>
+            <a href="personnel.html">Personnel Movement</a>
+            <a href="satellite.html" class="active">Satellite Routing</a>
+            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+        </div>
+
+        <div class="main-content">
+            <header>
+                <div class="header-title">
+                    <h2>Satellite Map & Route Pathfinding</h2>
+                    <p style="color: #00E5FF; font-size: 0.9em;">Sentinel-1 SAR Radar Sync: <span id="sync-status" style="color:#2ecc71;">LIVE</span></p>
+                </div>
+            </header>
+
+            <div class="map-container">
+                <div class="controls-panel">
+                    <h3 style="margin: 0 0 10px 0; color: #00E5FF;">Route Planner</h3>
+                    <p style="font-size: 0.8em; color:#ccc;">Select Origin and Destination on the map, or use default Maitri to Bharathi route.</p>
+                    
+                    <button class="btn-action" onclick="calculateSafeRoute()">Calculate Safe Route (A*)</button>
+                    <button class="btn-action btn-danger" onclick="toggleOfflineMode()" id="offline-btn">Enable Offline Caching</button>
+                    
+                    <div class="stats" id="route-stats" style="display: none;">
+                        <hr style="border-color: #333;">
+                        <div>Distance: <span id="stat-dist">0</span> km</div>
+                        <div>Est. Time: <span id="stat-time">0</span> hrs</div>
+                        <div>Risk Level: <span id="stat-risk" style="color: #2ecc71;">LOW</span></div>
+                    </div>
+                </div>
+                <div id="satellite-map"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/satellite.js"></script>
+    <!-- WebSocket Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
+</body>
+</html>
+
+

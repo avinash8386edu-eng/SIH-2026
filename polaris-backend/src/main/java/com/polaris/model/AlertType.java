@@ -1,0 +1,5 @@
+package com.polaris.model;
+
+public enum AlertType {
+    WEATHER, INVENTORY_LOW, FUEL_CRITICAL, MEDICAL, CREVASSE, SIGNAL_LOST, EQUIPMENT_FAILURE, SOS
+}

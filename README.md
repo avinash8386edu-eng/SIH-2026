@@ -1,9 +1,10 @@
 <div align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Flag_of_Antarctica.svg" alt="Antarctica Flag" width="120" />
   <h1>🇮🇳 POLARIS</h1>
-  <h3>Polar Operations, Logistics, and Resource Intelligence System</h3>
-  <p><em>Enterprise-grade mission control for -60°C conditions. Engineered for the 44th Indian Scientific Expedition to Antarctica (ISEA).</em></p>
-
-  ![Version](https://img.shields.io/badge/Version-2.1.0--PROD-blue.svg)
+  <h3>Autonomous Expedition Command & Edge Logistics System</h3>
+  <p><em>Built for the 43rd Indian Scientific Expedition to Antarctica (ISEA)</em></p>
+  
+  ![Version](https://img.shields.io/badge/Version-3.0.0--PROD-blue.svg)
   ![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
   ![Java](https://img.shields.io/badge/Backend-Spring_Boot_3.2-green.svg)
   ![JS](https://img.shields.io/badge/Frontend-Vanilla_JS_ES6-yellow.svg)
@@ -13,150 +14,92 @@
 
 ---
 
-## 2. Table of Contents
-1. [Hero Section & Badges](#-polaris)
-2. [Table of Contents](#2-table-of-contents)
-3. [Project Overview & The Mission](#3-project-overview--the-mission)
-4. [Core Architecture](#4-core-architecture-visual-graph)
-5. [Flagship Features & Workflows](#5-flagship-features--workflows)
-6. [State Diagram: The SOS Lifecycle](#6-state-diagram-the-sos-lifecycle)
-7. [System Comparison: Traditional vs. POLARIS](#7-system-comparison-traditional-workflow-vs-polaris)
-8. [Installation & Testing Guide](#8-installation--testing-guide)
-
----
-
-## 3. Project Overview & The Mission
+## 1. Project Overview & The Mission
 
 Operating research stations at the edge of the world—**Maitri (Schirmacher Oasis)** and **Bharati (Larsemann Hills)**—presents logistical challenges unparalleled anywhere else on Earth. The Indian Antarctic Programme relies on complex supply chains spanning from Goa to Cape Town to the Antarctic Ice Shelf.
 
 **The Architectural Challenge:**
-* **Intermittent Connectivity:** VSAT links drop frequently due to extreme atmospheric interference and blizzards. Cloud-dependent apps fail instantly.
-* **Paper-bound Logistics:** Currently, critical inventory movements and cargo manifests (AL-1403) are tracked via paper or isolated Excel sheets, prone to synchronization errors across continents.
-* **Harsh Edge Environments:** Devices face extreme cold, rapidly depleting batteries, and rendering heavy UI components can cost a scientist their lifeline.
+* **Intermittent Connectivity:** VSAT links drop frequently due to extreme blizzards. Cloud-dependent apps fail instantly.
+* **Dangerous Terrain:** Crevasses shift daily, making static routes extremely hazardous.
+* **Paper-bound Logistics:** Critical cargo manifests (AL-1403) are tracked manually.
 
 **The POLARIS Solution:**
-POLARIS is an **Offline-First, Smart-Automated web architecture** designed to operate securely within a local station intranet, synchronize globally when VSAT is available, and gracefully degrade UI compute overhead during emergencies to preserve edge-device battery life.
+POLARIS is an **Offline-First, Smart-Automated web architecture** designed to operate securely within a local station intranet, synchronize globally via STOMP WebSockets, and leverage simulated Satellite AI to compute safe traversal routes.
 
 ---
 
-## 4. Core Architecture (Visual Graph)
+## 2. Core Architecture (Visual Graph)
 
-POLARIS operates on a highly resilient Edge-to-Cloud architecture. The system prioritizes the local network (Intranet) of the Antarctic station, ensuring critical functions never rely entirely on the Ministry VSAT uplink.
+POLARIS operates on a highly resilient Edge-to-Cloud architecture.
 
 ```mermaid
 graph TD
-    subgraph "Antarctic Edge (Zero Internet / Ice Shelf)"
-        PDA[Field Scientist PDA] -->|Web Bluetooth / LoRa| LDR[Convoy Leader PDA]
-        LDR -->|IndexedDB Offline Queue| LDR
+    subgraph "Antarctic Edge (Zero Internet)"
+        PDA[Field PDA / Scanner] -->|IndexedDB Offline Queue| PDA
+        PDA -.->|Service Worker Cache| SW((PWA Offline))
     end
     
-    subgraph "Base Station (Maitri / Bharati Intranet)"
-        LDR -->|WiFi Restored| API[Spring Boot REST API]
+    subgraph "Base Station (Maitri Intranet)"
+        PDA -->|WiFi Restored| API[Spring Boot REST API]
         API <--> WS[STOMP WebSockets]
         API <--> DB[(MySQL Ledger)]
-        WS --> UI[Base Commander Dashboard]
+        WS --> UI[Command Center Dashboard]
         UI -->|Three.js| DT[3D Digital Twin]
-        UI -->|NLP| AI[POLAR-GPT Engine]
+        UI -->|Heuristics| AI[POLAR-GPT Engine]
     end
     
-    subgraph "Ministry of Earth Sciences (Goa, India)"
-        DB -->|Intermittent VSAT Sync| HQ[(NCPOR Master DB)]
-        HQ -->|SheetJS Export| REPORT[AL-1403 Ministry Reports]
+    subgraph "Ministry (NCPOR, Goa)"
+        UI -->|DOM rendering| PDF[AL-1403 Manifests]
+        DB -->|Intermittent VSAT Sync| HQ[(Master DB)]
     end
 ```
 
 ---
 
-## 5. Flagship Features & Workflows
+## 3. Flagship Features & Workflows
 
-### A. True Offline P2P Mesh & IndexedDB SOS
-When a field scientist loses connection during a traverse, POLARIS utilizes native browser capabilities to cache distress signals. Once the local network is re-established, the payload auto-syncs.
+### A. True Offline "Blizzard Mode" (PWA & IndexedDB)
+When a field scientist loses connection during a traverse, POLARIS utilizes native browser Service Workers (`sw.js`) to cache the UI. Critical POST actions (like SOS or QR Scans) are intercepted by a background Sync Queue, stored safely in IndexedDB, and automatically replayed to the server when the VSAT link is restored. 
 
-**Core Logic (IndexedDB Queuing):**
-```javascript
-// Function to queue SOS payload locally when navigator.onLine is false
-function queueOfflineSOS(payload) {
-    const request = indexedDB.open('PolarisOfflineDB', 1);
-    request.onsuccess = (e) => {
-        const db = e.target.result;
-        const transaction = db.transaction(['sos_queue'], 'readwrite');
-        const store = transaction.objectStore('sos_queue');
-        
-        store.add({
-            timestamp: Date.now(),
-            latitude: payload.lat,
-            longitude: payload.lon,
-            type: 'MEDICAL_EMERGENCY',
-            synced: false
-        });
-        console.warn("VSAT Offline. SOS queued locally to IndexedDB.");
-    };
-}
-```
+### B. Sentinel-1 Satellite AI (A* Routing)
+Instead of static maps, POLARIS features a simulated **Satellite Routing System**. The backend dynamically evaluates a route between Maitri and Bharathi using the Haversine formula and generates randomized GeoJSON danger zones (Crevasses). An **A* pathfinding algorithm** computes the safest detour in real-time, rendered over an Esri World Imagery map via Leaflet.js.
 
-### B. Blizzard / Battery Saver Mode (Minimal Lifeline Protocol)
-During a blizzard (Katabatic winds), station power fluctuates and PDA batteries plummet. Triggering "Blizzard Mode" immediately halts `Three.js` renders, kills CSS animations, and forces a high-contrast text-only fallback to reduce GPU load to 0%.
+### C. POLAR-GPT (AI Subsystem Simulator)
+The command dashboard features a built-in Natural Language terminal. Instead of a hardcoded mock, POLAR-GPT actively executes live SQL-backed API calls. Asking *"Do we have enough diesel?"* will fetch actual DB inventory, calculate the winter burn rate, and respond autonomously. 
 
-**Core Logic (CSS & Render Throttling):**
-```javascript
-// Toggle logic for Blizzard Battery Saver Mode
-powerBtn.onclick = () => {
-    window.isBlizzardMode = !window.isBlizzardMode;
-    if (window.isBlizzardMode) {
-        document.body.classList.add('blizzard-mode');
-        // Kills heavy UI: Charts, Leaflet Maps, and 3D Canvases
-        document.querySelectorAll('.heavy-ui').forEach(el => el.style.display = 'none');
-    }
-};
-```
+### D. Live WebSocket Telemetry & SOS
+Using `SockJS` and `STOMP` protocols over `/ws-emergency`, any SOS triggered by a PDA instantly bypasses REST polling and broadcasts a massive, screen-locking Red Alert popup to every active terminal across the base. Vehicle telemetry GPS coordinates also stream live, causing map markers to move in real-time.
 
-### C. Winter Inventory Guard & Smart Automation
-An autonomous AI worker continually monitors High-Speed Diesel (HSD) and Aviation Turbine Fuel (ATF) burn rates. If current stores drop below the winter threshold (e.g., 200L/day), an automated alert is triggered. 
-
-### D. Paperless Cargo (AL-1403)
-Utilizes the HTML5 WebRTC API to scan QR codes on cargo. Replaces the manual paper trail with an immutable digital timeline tracking an asset from Goa ➔ Cape Town ➔ Bharati.
+### E. Cyber-Ice Command Center UI/UX
+The entire frontend has been overhauled using a custom `Glassmorphism` CSS framework. Featuring OLED pure black backgrounds, frosted glass panels (`backdrop-filter: blur`), and glowing cyan/yellow accents.
 
 ---
 
-## 6. State Diagram: The SOS Lifecycle
+## 4. State Diagram: The SOS Lifecycle
 
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-    Idle --> Triggered: Scientist presses SOS / High BPM
+    Idle --> Triggered: Scientist presses SOS
     
     state network_check <<choice>>
-    Triggered --> network_check: Check VSAT/WiFi Status
+    Triggered --> network_check: Check VSAT Status
     
-    network_check --> Offline_Queue: navigator.onLine == false
-    Offline_Queue --> P2P_Mesh: Broadcast via Web Bluetooth
-    P2P_Mesh --> Auto_Sync: Network Restored
+    network_check --> Offline_Queue: Offline (IndexedDB)
+    Offline_Queue --> Auto_Sync: Network Restored
     
-    network_check --> Base_Commander: navigator.onLine == true
-    Auto_Sync --> Base_Commander
+    network_check --> Spring_Boot_API: Online
+    Auto_Sync --> Spring_Boot_API
     
-    Base_Commander --> WebAudio_Siren: Trigger 800Hz Alarm
-    Base_Commander --> SQL_Ledger: Persist Emergency Log
+    Spring_Boot_API --> WebSockets: STOMP Broadcast
+    WebSockets --> Command_Center: Screen-locking Red Alert
+    WebSockets --> SQL_Ledger: Persist Event
     SQL_Ledger --> [*]: Rescue Dispatched
 ```
 
 ---
 
-## 7. System Comparison: Traditional vs. POLARIS
-
-| Operational Workflow | Current Baseline (Typical Expedition) | POLARIS Architecture |
-| :--- | :--- | :--- |
-| **Emergency Comms** | Analog VHF Radio (fails behind ice ridges). | Digital WebSockets + Offline IndexedDB queueing. |
-| **Cargo Tracking** | Paper manifests (AL-1403), Excel manual entry. | 1-Click QR Optical scanning & API automated syncing. |
-| **Fuel Prediction** | Manual calculation by Logistics Officer. | AI-driven Burn Rate ML prediction based on real-time DB. |
-| **Edge Compute** | Web apps die if internet drops or battery dies. | Minimal Lifeline Protocol strips UI elements to save GPU/Battery. |
-| **Medical Telemetry** | Intermittent manual checks over radio. | Simulated Live Telemetry (SpO2/BPM) with Anomaly SOS triggers. |
-
-*(Note: Comparisons are based strictly on traditional analog expedition tracking vs. the automated capabilities of POLARIS.)*
-
----
-
-## 8. Installation & Testing Guide
+## 5. Installation & Testing Guide
 
 ### Prerequisites
 * Java 17+
@@ -174,7 +117,7 @@ CREATE DATABASE polaris_db;
 ```bash
 cd polaris-backend
 mvn clean install
-mvn spring-boot:run
+mvn spring-boot:run -DskipTests
 ```
 *Backend runs natively on `http://localhost:8080`.*
 
@@ -186,4 +129,5 @@ cd polaris-frontend
 python -m http.server 5500
 # OR Live Server via VS Code on Port 5500
 ```
-Open `http://localhost:5500/dashboard.html` to enter the Command Center.
+Open `http://localhost:5500/index.html` to enter the Command Center.
+(Default Login: `commander@polaris.com` / `commander123`)

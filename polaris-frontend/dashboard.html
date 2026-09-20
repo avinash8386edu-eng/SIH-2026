@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,51 +6,51 @@
     <title>POLARIS - Expedition Planning</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#020617">
 </head>
 <body class="oled-theme">
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo" style="color: #00E5FF;">POLARIS</div>
+            <div class="logo" style="color: var(--accent-cyan);">POLARIS</div>
             <a href="dashboard.html" class="active">Expedition Planning</a>
             <a href="cargo.html">Cargo Tracking</a>
             <a href="inventory.html">Inventory</a>
             <a href="personnel.html">Personnel Movement</a>
+            <a href="satellite.html">Satellite Routing</a>
             <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
         </div>
 
         <div class="main-content">
-            <h2 style="color: #00E5FF;">ðŸ—ºï¸ Expedition Planning & Telemetry</h2>
+            <h2 style="color: var(--accent-cyan); margin-bottom: 30px; font-size: 2.2rem; font-weight: 700; text-transform: uppercase;">Expedition Planning & Telemetry</h2>
             
-            <div class="dashboard-grid" style="padding:0; grid-template-columns: 2fr 1fr;">
-                
+            <div class="dashboard-grid">
                 <!-- 3D Digital Twin -->
-                <div class="card heavy-ui" style="background:#0a0a0a; border-color:#3498DB; position:relative; overflow:hidden;">
-                    <h3 style="color:#3498DB; z-index:10; position:relative;">MAITRI STATION: 3D DIGITAL TWIN</h3>
-                    <div id="three-container" style="width: 100%; height: 350px; background: #000; border-radius: 8px;"></div>
-                    <button class="btn btn-primary" onclick="simulateFuelDrain()" style="position:absolute; bottom:20px; left:20px; z-index:10; background:#E74C3C; border:none;">⚠️ Simulate HSD Fuel Leak</button>
+                <div class="card" style="position:relative; overflow:hidden; grid-column: span 2;">
+                    <h3 style="color:var(--accent-cyan); z-index:10; position:relative;">MAITRI STATION: 3D DIGITAL TWIN</h3>
+                    <div id="three-container" style="width: 100%; height: 380px; background: rgba(0,0,0,0.5); border-radius: 8px;"></div>
+                    <button class="btn btn-primary" onclick="simulateFuelDrain()" style="position:absolute; bottom:30px; left:30px; z-index:10; background:var(--accent-red); border:none; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);">🚨 Simulate HSD Fuel Leak</button>
                 </div>
 
                 <!-- AI Polar-GPT -->
-                <div class="card" style="background:#111; display:flex; flex-direction:column;">
-                    <h3 style="color:#F1C40F;">🤖 POLAR-GPT AI COMMAND</h3>
-                    <p style="font-size:0.85em; color:#888;">LLM Analytics Engine (Gemini Subsystem)</p>
-                    <div id="gpt-chat" style="flex-grow:1; background:#000; border:1px solid #333; padding:10px; overflow-y:auto; font-family:monospace; font-size:13px; margin-bottom:10px; border-radius:5px; height: 250px;">
-                        <div style="color:#2ECC71;">> System Online. Type to query Maitri/Bharati Logistics Ledger.</div>
+                <div class="card" style="display:flex; flex-direction:column; height: 100%;">
+                    <h3 style="color:var(--accent-yellow);">🧠 POLAR-GPT AI COMMAND</h3>
+                    <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom: 15px;">LLM Analytics Engine</p>
+                    <div id="gpt-chat" style="flex-grow:1; background:rgba(0,0,0,0.6); border:1px solid var(--border-color); padding:15px; overflow-y:auto; font-family:monospace; font-size:14px; margin-bottom:15px; border-radius:8px; min-height: 250px;">
+                        <div style="color:var(--accent-green);">> System Online. Type to query Logistics Ledger.</div>
                     </div>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="gpt-input" placeholder="e.g. Do we have enough diesel for winter?" style="flex-grow:1; background:#222; color:#00E5FF; border:1px solid #555; padding:8px; border-radius:4px;">
-                        <button onclick="sendGPTCommand()" class="btn btn-primary" style="background:#F1C40F; color:#000; font-weight:bold;">SEND</button>
+                        <input type="text" id="gpt-input" placeholder="e.g. Do we have enough diesel?" style="background:rgba(0,0,0,0.8); border:1px solid var(--border-color);">
+                        <button onclick="sendGPTCommand()" class="btn" style="background:var(--accent-yellow); color:#000; border:none; width: 90px;">SEND</button>
                     </div>
                 </div>
             </div>
 
-            <div class="card" style="background:#111; margin-top:20px; border-left:4px solid #8E44AD;">
-                <h3 style="color:#8E44AD;">🤖 AUTONOMOUS AI ACTIVITY LOG (SMART AUTOMATION)</h3>
-                <p style="color:#aaa; font-size:0.9em;">Background processes managed autonomously by POLARIS AI to optimize power, logistics, and routing.</p>
+            <div class="card" style="margin-top:25px; border-left:4px solid #8E44AD;">
+                <h3 style="color:#a855f7;">🤖 AUTONOMOUS AI ACTIVITY LOG (SMART AUTOMATION)</h3>
+                <p style="color:var(--text-secondary); font-size:0.95em; margin-bottom: 15px;">Background processes managed autonomously by POLARIS AI to optimize power, logistics, and routing.</p>
                 
-                <div style="background:#050505; border:1px solid #333; padding:10px; font-family:monospace; font-size:12px; height:120px; overflow-y:hidden; color:#2ECC71;" id="auto-log">
+                <div style="background:rgba(0,0,0,0.8); border:1px solid var(--border-color); padding:15px; font-family:monospace; font-size:14px; height:140px; overflow-y:auto; color:var(--accent-green); border-radius:8px;" id="auto-log">
                     <div>[02:14:00] AI_WORKER: Analyzed INSAT-3D Weather Data. Nominal.</div>
                     <div>[02:18:22] AI_WORKER: Maitri Core Heater optimized. Saved 1.2% HSD.</div>
                     <div>[02:20:11] AI_WORKER: Validated P2P Mesh heartbeat for Traverse Team Alpha.</div>
@@ -59,7 +59,6 @@
         </div>
     </div>
 
-    <!-- Three.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
@@ -67,69 +66,61 @@
     <script src="js/advanced-sos.js"></script>
     <script src="js/global-ui.js"></script>
     <script>
-        // --- 1. POLAR-GPT (ADVANCED NLP & STREAMING SIMULATOR) ---
+        // AI Logic
         async function sendGPTCommand() {
             const input = document.getElementById('gpt-input');
             const chat = document.getElementById('gpt-chat');
-            const userMsg = input.value;
+            const userMsg = input.value.trim();
             if(!userMsg) return;
             
-            chat.innerHTML += `<div style="color:#fff; margin-top:10px;">> <b>CMDR:</b> ${userMsg}</div>`;
+            chat.innerHTML += <div style="color:#fff; margin-top:10px;">> <b>CMDR:</b> </div>;
             input.value = '';
             chat.scrollTop = chat.scrollHeight;
 
-            // Generate unique ID for this response
             const responseId = 'gpt-resp-' + Date.now();
-            chat.innerHTML += `<div id="${responseId}" style="color:#00E5FF; margin-top:5px; padding-left:10px; border-left:2px solid #00E5FF;">> <b>POLAR-GPT:</b> <span class="typing">Processing NLP...</span></div>`;
+            chat.innerHTML += <div id="" style="color:var(--accent-cyan); margin-top:5px; padding-left:10px; border-left:2px solid var(--accent-cyan);">> <b>POLAR-GPT:</b> <span class="typing">Processing...</span></div>;
             chat.scrollTop = chat.scrollHeight;
             
             const respDiv = document.getElementById(responseId);
             const txt = userMsg.toLowerCase();
-            
-            setTimeout(() => { respDiv.innerHTML = '> <b>POLAR-GPT:</b> <span class="typing">Querying POLARIS DB...</span>'; }, 800);
             
             setTimeout(async () => {
                 let finalReply = "";
                 try {
                     if (txt.includes('diesel') || txt.includes('fuel') || txt.includes('hsd')) {
                         const items = await apiCall('/inventory');
-                        const hsd = items.find(i => i.itemName.includes("High-Speed Diesel")) || {quantity: 350000};
-                        const days = Math.floor(hsd.quantity / 200);
-                        finalReply = `[NLP_MATCH: 'fuel'] -> SQL SELECT * FROM Inventory WHERE category='FUEL';\n\nResult: We currently have ${hsd.quantity} Liters of High-Speed Diesel (HSD) at Bharati.\nPredictive ML Model indicates a winter burn rate of 200L/day.\nAnalysis: You are secure for ${days} days. No immediate vessel restock required.`;
-                    } else if (txt.includes('food') || txt.includes('mre') || txt.includes('pulav')) {
-                        finalReply = `[NLP_MATCH: 'food'] -> Analyzing Rations...\nWe have 1200 pouches of DFRL MRE: Vegetable Pulav. Expected to last 24 days for a 50-man crew based on smart consumption metrics.`;
-                    } else if (txt.includes('personnel') || txt.includes('team') || txt.includes('scientist')) {
-                        const users = await apiCall('/personnel');
-                        finalReply = `[NLP_MATCH: 'personnel'] -> Real-time Tracking Active.\nCurrently tracking ${users.length} scientists across the ice shelf. 3 active P2P mesh nodes responding.`;
+                        const hsd = items.find(i => i.itemName.toLowerCase().includes("diesel")) || {quantity: 350000};
+                        finalReply = [NLP_MATCH: 'fuel'] -> We have  Liters of High-Speed Diesel (HSD) at Bharati.\nPredictive ML Model indicates a winter burn rate of 200L/day.\nAnalysis: Secure for  days.;
+                    } else if (txt.includes('personnel') || txt.includes('vehicle') || txt.includes('telemetry')) {
+                        const tracking = await apiCall('/tracking/live');
+                        if (tracking && tracking.length > 0) {
+                            finalReply = [NLP_MATCH: 'tracking'] -> Live Telemetry Active.\nTracking  active vehicles. Latest: ID  at  km/h.;
+                        } else {
+                            finalReply = "[NLP_MATCH: 'tracking'] -> No vehicles are currently broadcasting live telemetry.";
+                        }
                     } else {
-                        finalReply = `Command not recognized by specific operational logistics module. Proceeding with heuristic analysis... (For Demo: Ask about 'diesel', 'food', or 'personnel').`;
+                        finalReply = Command parsed heuristically. Operational logs show nominal status. (For Demo: Ask about 'diesel' or 'telemetry').;
                     }
                 } catch(e) {
                     finalReply = "ERR_CONNECTION_REFUSED: Could not access live SQL Ledger.";
                 }
 
-                // Typewriter effect
                 respDiv.innerHTML = '> <b>POLAR-GPT:</b> <br>';
                 let i = 0;
-                let isTag = false;
                 let text = finalReply.replace(/\n/g, '<br>');
-                
                 function typeWriter() {
                     if (i < text.length) {
-                        if(text.charAt(i) === '<') isTag = true;
                         respDiv.innerHTML += text.charAt(i);
-                        if(text.charAt(i) === '>') isTag = false;
                         i++;
                         chat.scrollTop = chat.scrollHeight;
-                        setTimeout(typeWriter, isTag ? 0 : 15); // Fast typing
+                        setTimeout(typeWriter, 15);
                     }
                 }
                 typeWriter();
-
-            }, 1800);
+            }, 800);
         }
 
-        // --- AUTONOMOUS LOG SIMULATOR ---
+        // Autonomous Log Simulator
         setInterval(() => {
             const logDiv = document.getElementById('auto-log');
             if(!logDiv) return;
@@ -137,103 +128,88 @@
                 "AI_WORKER: Recalculating PistenBully optimal route due to wind shear.",
                 "AI_WORKER: Pinged Maitri Drone Swarm. Status: STANDBY.",
                 "AI_WORKER: Predicted 5% drop in solar output. Routing battery reserve.",
-                "AI_WORKER: Synchronized medical telemetry for Field Team Alpha.",
-                "AI_WORKER: Cross-referencing manifest AL-1403 with Cape Town port authorities."
+                "AI_WORKER: Synchronized medical telemetry for Field Team Alpha."
             ];
             const msg = msgs[Math.floor(Math.random() * msgs.length)];
             const time = new Date().toLocaleTimeString('en-US', {hour12:false});
             const p = document.createElement('div');
-            p.innerText = `[${time}] ${msg}`;
+            p.innerText = [] ;
             logDiv.appendChild(p);
             logDiv.scrollTop = logDiv.scrollHeight;
             if(logDiv.children.length > 6) logDiv.removeChild(logDiv.firstChild);
         }, 8000);
 
-        // --- 2. THREE.JS DIGITAL TWIN LOGIC ---
-        let scene, camera, renderer, fuelTank1, fuelTank2;
-
+        // ThreeJS Digital Twin
+        let scene, camera, renderer, fuelTank1;
         function initThreeJS() {
             const container = document.getElementById('three-container');
+            if(!container) return;
             scene = new THREE.Scene();
-            scene.background = new THREE.Color('#050510');
-            
-            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 5, 12);
-            camera.lookAt(0, 0, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(renderer.domElement);
 
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            const ambientLight = new THREE.AmbientLight(0x404040);
             scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7); // Bright white light
-            directionalLight.position.set(5, 10, 5);
-            scene.add(directionalLight);
-            
-            const blueLight = new THREE.DirectionalLight(0x00E5FF, 0.2); // Soft blue bounce light
-            blueLight.position.set(-5, 5, -5);
-            scene.add(blueLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 7.5);
+            scene.add(dirLight);
 
-            // Ice Shelf Ground
+            // Ground
             const planeGeo = new THREE.PlaneGeometry(30, 30);
-            const planeMat = new THREE.MeshLambertMaterial({ color: 0xffffff }); // White ice plane
+            const planeMat = new THREE.MeshLambertMaterial({color: 0xcccccc, wireframe: true, transparent: true, opacity: 0.2});
             const plane = new THREE.Mesh(planeGeo, planeMat);
             plane.rotation.x = -Math.PI / 2;
             scene.add(plane);
 
-            // Maitri Main Station
-            const stationGeo = new THREE.BoxGeometry(6, 2, 3);
-            const stationMat = new THREE.MeshLambertMaterial({ color: 0x3498DB });
-            const station = new THREE.Mesh(stationGeo, stationMat);
-            station.position.set(0, 1, 0);
-            scene.add(station);
+            // Base Building
+            const baseGeo = new THREE.BoxGeometry(6, 2, 4);
+            const baseMat = new THREE.MeshPhongMaterial({color: 0x00E5FF, transparent: true, opacity: 0.8});
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 1;
+            scene.add(base);
 
-            // Fuel Tanks (HSD & ATF)
-            const tankGeo = new THREE.CylinderGeometry(0.8, 0.8, 3, 32);
-            const tankMat = new THREE.MeshLambertMaterial({ color: 0xbdc3c7 });
-            
+            // Fuel Tank
+            const tankGeo = new THREE.CylinderGeometry(1, 1, 3, 32);
+            const tankMat = new THREE.MeshPhongMaterial({color: 0xF1C40F});
             fuelTank1 = new THREE.Mesh(tankGeo, tankMat);
             fuelTank1.position.set(-4, 1.5, -2);
             scene.add(fuelTank1);
 
-            fuelTank2 = new THREE.Mesh(tankGeo, tankMat);
-            fuelTank2.position.set(4, 1.5, -2);
-            scene.add(fuelTank2);
+            camera.position.set(0, 5, 10);
+            camera.lookAt(0, 0, 0);
 
+            function animate() {
+                requestAnimationFrame(animate);
+                scene.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
             animate();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            scene.rotation.y += 0.002; // Slow cinematic rotation
-            renderer.render(scene, camera);
-        }
-
         function simulateFuelDrain() {
-            alert("âš ï¸ SYSTEM ALERT: Major HSD Fuel line fracture detected! AI auto-rerouting valves...");
+            alert("⚠️ SYSTEM ALERT: Major HSD Fuel line fracture detected! AI auto-rerouting valves...");
             const logDiv = document.getElementById('auto-log');
             if(logDiv) {
                 const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-                logDiv.innerHTML += `<div style="color:#E74C3C;">[${time}] CRITICAL: AI sealed HSD Valve A to stop leakage!</div>`;
+                logDiv.innerHTML += <div style="color:var(--accent-red);">[] CRITICAL: AI sealed HSD Valve A to stop leakage!</div>;
                 logDiv.scrollTop = logDiv.scrollHeight;
             }
-            
-            // Turn tank red and shrink it to simulate draining
-            fuelTank1.material.color.setHex(0xE74C3C); // Red Alert
+            fuelTank1.material.color.setHex(0xE74C3C);
             let scaleY = 1.0;
             const drainInterval = setInterval(() => {
                 scaleY -= 0.02;
                 if(scaleY <= 0.2) clearInterval(drainInterval);
                 fuelTank1.scale.y = scaleY;
-                fuelTank1.position.y = (3 * scaleY) / 2; // Keep it on the ground
+                fuelTank1.position.y = (3 * scaleY) / 2;
             }, 100);
         }
 
         window.onload = initThreeJS;
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
 </body>
 </html>
-
-
