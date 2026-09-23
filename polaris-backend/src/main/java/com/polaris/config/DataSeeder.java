@@ -19,63 +19,49 @@ public class DataSeeder implements CommandLineRunner {
     private final AssetRepository assetRepository;
     private final InventoryRepository inventoryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ExpeditionRepository expeditionRepository;
 
     @Override
     public void run(String... args) throws Exception {
+        seedExpeditions();
         seedUsers();
         seedAssets();
         seedInventory();
         System.out.println("?? 43rd ISEA (Indian Scientific Expedition to Antarctica) Data Seeded Successfully!");
     }
 
-    private void seedUsers() {
-        // HACKATHON DEMO MODE: Always reseed to ensure fresh BCrypt hashes
-        if (userRepository.count() > 0) {
-            userRepository.deleteAll();
-            System.out.println("🔄 Cleared stale user records for fresh demo seeding.");
+    private void seedExpeditions() {
+        if (!expeditionRepository.findById(43L).isPresent()) {
+            Expedition exp = Expedition.builder()
+                .id(43L)
+                .name("43rd ISEA")
+                
+                .startDate(LocalDate.of(2023, 11, 1))
+                .endDate(LocalDate.of(2025, 4, 30))
+                .station(Station.BOTH)
+                .build();
+            expeditionRepository.save(exp);
         }
-        {
-            User admin = User.builder()
-                    .name("Denney George (VU2DGR)")
-                    .email("admin@polaris.com")
-                    .passwordHash(passwordEncoder.encode("admin123"))
-                    .role(Role.ADMIN)
-                    .expeditionId(43L)
-                    .currentStatus("ACTIVE")
-                    .build();
+    }
 
-            User commander = User.builder()
-                    .name("Subrata Moulik (Maitri)")
-                    .email("commander@polaris.com")
-                    .passwordHash(passwordEncoder.encode("commander123"))
-                    .role(Role.COMMANDER)
-                    .expeditionId(43L)
-                    .currentStatus("ACTIVE")
-                    .build();
+    private void seedUsers() {
+        seedUserIfNotExists("Denney George (VU2DGR)", "admin@polaris.com", "admin123", Role.ADMIN, "ACTIVE");
+        seedUserIfNotExists("Subrata Moulik (Maitri)", "commander@polaris.com", "commander123", Role.COMMANDER, "ACTIVE");
+        seedUserIfNotExists("Dr. Yogesh Ray (Expedition Leader)", "scientist1@polaris.com", "sci123", Role.SCIENTIST, "ON_TRAVERSE");
+        seedUserIfNotExists("Showmitra Chowdhury (CSC)", "scientist2@polaris.com", "sci123", Role.SCIENTIST, "ON_TRAVERSE");
+    }
 
-            User scientist1 = User.builder()
-                    .name("Dr. Yogesh Ray (Expedition Leader)")
-                    .email("scientist1@polaris.com")
-                    .passwordHash(passwordEncoder.encode("sci123"))
-                    .role(Role.SCIENTIST)
+    private void seedUserIfNotExists(String name, String email, String password, Role role, String status) {
+        if (!userRepository.findByEmail(email).isPresent()) {
+            User user = User.builder()
+                    .name(name)
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode(password))
+                    .role(role)
                     .expeditionId(43L)
-                    .currentStatus("ON_TRAVERSE")
-                    .lastLatitude(-70.7661) // Maitri Area
-                    .lastLongitude(11.7322)
+                    .currentStatus(status)
                     .build();
-
-            User scientist2 = User.builder()
-                    .name("Showmitra Chowdhury (CSC)")
-                    .email("scientist2@polaris.com")
-                    .passwordHash(passwordEncoder.encode("sci123"))
-                    .role(Role.SCIENTIST)
-                    .expeditionId(43L)
-                    .currentStatus("ON_TRAVERSE")
-                    .lastLatitude(-69.4069) // Bharati Area
-                    .lastLongitude(76.1953)
-                    .build();
-
-            userRepository.saveAll(List.of(admin, commander, scientist1, scientist2));
+            userRepository.save(user);
         }
     }
 
@@ -179,3 +165,5 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 }
+
+

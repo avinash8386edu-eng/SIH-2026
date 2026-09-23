@@ -15,13 +15,14 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">POLARIS</div>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="cargo.html">Cargo & Assets</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="personnel.html">Personnel Tracker</a>
-            <a href="fuel.html" class="active">Fuel & AI Monitoring</a>
-            <a href="emergency.html">Emergency / SOS</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+            <a href="dashboard.html">🗺️ Expedition Planning</a>
+            <a href="cargo.html">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html">🚶 Personnel Movement</a>
+            <a href="satellite.html">🛰️ Satellite Routing</a>
+            <a href="fuel.html" class="active">⛽ Fuel Monitoring</a>
+            <a href="emergency.html">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
         </div>
 
         <div class="main-content">
@@ -57,27 +58,22 @@
             </div>
 
             <div class="card">
-                <h3 style="color: #E74C3C;">⚠️ ML Anomaly Detection Alerts</h3>
-                <table style="width:100%; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid #1B4F72;">
-                        <th style="padding:10px; text-align:left;">Timestamp</th>
-                        <th style="padding:10px; text-align:left;">Subsystem</th>
-                        <th style="padding:10px; text-align:left;">Anomaly Profile</th>
-                        <th style="padding:10px; text-align:left;">AI Recommendation</th>
-                    </tr>
-                    <tr style="background: rgba(231,76,60,0.1);">
-                        <td style="padding:10px;">Today, 08:14z</td>
-                        <td style="padding:10px;">Generator #2 (Maitri)</td>
-                        <td style="padding:10px;">Sudden 14% efficiency drop (Viscosity issue detected)</td>
-                        <td style="padding:10px;">Engage line heaters immediately</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:10px;">Yesterday, 14:22z</td>
-                        <td style="padding:10px;">Traverse Convoy Alpha</td>
-                        <td style="padding:10px;">Burn rate exceeding forecast by 8%</td>
-                        <td style="padding:10px;">Route optimization suggested (Heavy sastrugi detected)</td>
-                    </tr>
-                </table>
+                <h3 style="color: var(--accent-red);">⚠️ ML Anomaly Detection Alerts</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Subsystem / Asset</th>
+                                <th>Anomaly Profile</th>
+                                <th>AI Recommendation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="anomalyTableBody">
+                            <tr><td colspan="4" style="text-align: center;">Loading AI telemetry...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -142,7 +138,40 @@
             setInterval(() => {
                 const efficiency = (94.2 + (Math.random() * 0.4 - 0.2)).toFixed(1);
                 document.getElementById('stat-efficiency').innerText = efficiency + '%';
-            }, 3000);
+            }, 2000);
+
+            // Fetch live anomalies from backend
+            async function fetchAnomalies() {
+                try {
+                    const anomalies = await apiCall('/intelligence/anomalies');
+                    const tbody = document.getElementById('anomalyTableBody');
+                    tbody.innerHTML = '';
+                    
+                    if (anomalies.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--accent-green);">No anomalies detected. Systems nominal.</td></tr>';
+                        return;
+                    }
+                    
+                    anomalies.forEach(a => {
+                        let row = document.createElement('tr');
+                        if (a.severity === 'CRITICAL') {
+                            row.style.background = 'rgba(239, 68, 68, 0.1)';
+                        }
+                        row.innerHTML = `
+                            <td>${new Date(a.detectedAt).toLocaleString()}</td>
+                            <td>${a.source || 'General System'}</td>
+                            <td>${a.description || a.anomalyType}</td>
+                            <td>${a.recommendedAction || 'Monitor closely'}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } catch(e) {
+                    console.error("Failed to load anomalies", e);
+                    document.getElementById('anomalyTableBody').innerHTML = '<tr><td colspan="4" style="color:var(--accent-red);">Offline Mode - Cannot reach AI Engine.</td></tr>';
+                }
+            }
+            
+            fetchAnomalies();
         });
     </script>
 <script src="js/db.js"></script>

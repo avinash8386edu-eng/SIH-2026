@@ -14,12 +14,14 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">POLARIS</div>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="cargo.html">Cargo & Assets</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="personnel.html">Personnel Tracker</a>
-            <a href="emergency.html" class="active">Emergency / SOS</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout</a>
+            <a href="dashboard.html">🗺️ Expedition Planning</a>
+            <a href="cargo.html">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html">🚶 Personnel Movement</a>
+            <a href="satellite.html">🛰️ Satellite Routing</a>
+            <a href="fuel.html">⛽ Fuel Monitoring</a>
+            <a href="emergency.html" class="active">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
         </div>
 
         <div class="main-content">
@@ -41,7 +43,7 @@
                     box-shadow: 0px 10px 30px rgba(231, 76, 60, 0.4);
                     transition: transform 0.1s;
                 " onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-                    ðŸš¨ SOS ðŸš¨
+                    🚨 SOS 🚨
                 </button>
                 <p style="margin-top: 20px; color: #BDC3C7; font-size: 1.2rem;">
                     <strong>THICK GLOVE OPTIMIZED:</strong> TAP ANYWHERE ON THE RED PANEL
@@ -216,54 +218,59 @@
         }
 
         async function syncOfflineQueue() {
-            let queue = JSON.parse(localStorage.getItem('sos_queue') || '[]');
-            if(queue.length === 0) return;
-            
-            for(let i=0; i<queue.length; i++) {
-                try {
-                    await apiCall('/emergency/sos', 'POST', queue[i]);
-                    queue.splice(i, 1);
-                    i--;
-                } catch(e) {
-                    break;
+            if (typeof getOfflineRequests === 'function') {
+                const reqs = await getOfflineRequests();
+                if (reqs && reqs.length > 0) {
+                    for (let r of reqs) {
+                        if (r.endpoint === '/alerts/sos') {
+                            await apiCall('/alerts/sos', 'POST', r.data);
+                            await deleteOfflineRequest(r.id);
+                        }
+                    }
+                    loadEmergencies();
                 }
             }
-            localStorage.setItem('sos_queue', JSON.stringify(queue));
-            loadEmergencies();
         }
+
+        window.addEventListener('online', syncOfflineQueue);
 
         async function loadEmergencies() {
             try {
-                const emergencies = await apiCall('/emergency');
+                const list = await apiCall('/alerts');
                 const tbody = document.getElementById('emergencyTableBody');
                 tbody.innerHTML = '';
                 
-                emergencies.forEach(e => {
-                    let statusClass = e.status === 'ACTIVE' ? 'badge-danger' : 
-                                      e.status === 'RESPONDING' ? 'badge-warning' : 'badge-success';
+                list.forEach(e => {
+                    const badgeClass = e.status === 'RESOLVED' ? 'badge-success' : 
+                                     (e.severity === 'EMERGENCY' ? 'badge-danger' : 'badge-warning');
+                                     
+                    let actionBtn = e.status !== 'RESOLVED' ? 
+                        `<button onclick="resolveEmergency(${e.id})" class="btn" style="padding:5px 10px;">Resolve</button>` : '';
 
                     tbody.innerHTML += `
                         <tr>
-                            <td>${new Date(e.createdAt).toLocaleString()}</td>
-                            <td>${e.type}</td>
-                            <td>${e.severity}</td>
-                            <td>${e.description}</td>
-                            <td><span class="badge ${statusClass}">${e.status}</span></td>
-                            <td>
-                                ${e.status !== 'RESOLVED' ? `<button class="btn btn-primary" onclick="resolveEmergency(${e.id})">Resolve</button>` : 'Resolved'}
-                            </td>
+                            <td>[${new Date(e.createdAt).toLocaleTimeString()}]</td>
+                            <td>${e.alertType || ''}</td>
+                            <td><span class="badge ${badgeClass}">${e.severity || ''}</span></td>
+                            <td>${e.message || e.title || ''}</td>
+                            <td><span class="badge ${badgeClass}">${e.status || ''}</span></td>
+                            <td>${actionBtn}</td>
                         </tr>
                     `;
                 });
-            } catch(e) {}
+            } catch(err) {
+                console.error("Failed to load alerts", err);
+            }
         }
 
         async function resolveEmergency(id) {
-            try {
-                await apiCall(`/emergency/${id}/resolve`, 'PUT');
-                loadEmergencies();
-            } catch(e) {
-                alert("Failed to resolve emergency.");
+            if(confirm("Confirm: Situation resolved and area secured?")) {
+                try {
+                    await apiCall(`/alerts/${id}/resolve`, 'PATCH');
+                    loadEmergencies();
+                } catch(err) {
+                    alert("Failed to resolve alert.");
+                }
             }
         }
 

@@ -26,9 +26,7 @@ public class CargoController {
     @GetMapping
     public ResponseEntity<List<Cargo>> getAllCargo(@RequestParam(required = false) CargoStatus status) {
         if (status != null) {
-            // Assuming findByStatus exists, otherwise filter
-            List<Cargo> all = cargoRepository.findAll();
-            return ResponseEntity.ok(all.stream().filter(c -> c.getStatus() == status).toList());
+            return ResponseEntity.ok(cargoRepository.findByStatus(status));
         }
         return ResponseEntity.ok(cargoRepository.findAll());
     }
@@ -81,11 +79,7 @@ public class CargoController {
 
     @GetMapping("/{id}/timeline")
     public ResponseEntity<List<CargoEvent>> getCargoTimeline(@PathVariable Long id) {
-        // Assuming findByCargoIdOrderByTimestampAsc exists
-        return ResponseEntity.ok(cargoEventRepository.findAll().stream()
-                .filter(e -> e.getCargoId() != null && e.getCargoId().equals(id))
-                .sorted((e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()))
-                .toList());
+        return ResponseEntity.ok(cargoEventRepository.findByCargoIdOrderByTimestampAsc(id));
     }
 
     @PostMapping("/{id}/scan")

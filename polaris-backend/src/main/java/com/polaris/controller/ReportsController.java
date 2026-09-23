@@ -28,9 +28,9 @@ public class ReportsController {
     public ResponseEntity<Map<String, Object>> getSummary() {
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalCargo", cargoRepository.count());
-        summary.put("activeMissions", missionRepository.findByStatus(MissionStatus.ACTIVE).size());
+        summary.put("activeMissions", missionRepository.countByStatus(MissionStatus.ACTIVE));
         summary.put("totalPersonnel", userRepository.count());
-        summary.put("activeAlerts", alertRepository.findByStatus(AlertStatus.ACTIVE).size());
+        summary.put("activeAlerts", alertRepository.countByStatus(AlertStatus.ACTIVE));
         summary.put("totalTransports", transportRepository.count());
         
         long inventoryCount = 0;

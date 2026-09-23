@@ -15,10 +15,38 @@ public class InventoryForecaster {
 
     public List<Map<String, Object>> forecastAll() {
         List<Map<String, Object>> forecasts = new ArrayList<>();
+        List<com.polaris.model.Inventory> items = inventoryRepository.findAll();
         
-        // Logic stub for compiling safely while providing the requested structure
-        // For each inventory item calculate daily consumption, days remaining, status.
-        // Auto-create Alert records for CRITICAL and WARNING items.
+        for (com.polaris.model.Inventory item : items) {
+            Map<String, Object> forecast = new HashMap<>();
+            forecast.put("itemId", item.getId());
+            forecast.put("itemName", item.getItemName());
+            forecast.put("currentQuantity", item.getQuantity());
+            
+            // Heuristic burn rates
+            double burnRate = 0;
+            if (item.getCategory() == com.polaris.model.InventoryCategory.FUEL) {
+                burnRate = 200.0; // 200L/day
+            } else if (item.getCategory() == com.polaris.model.InventoryCategory.FOOD) {
+                burnRate = 15.0;
+            } else {
+                burnRate = 1.0;
+            }
+            
+            int daysRemaining = (int) (item.getQuantity() / burnRate);
+            forecast.put("burnRatePerDay", burnRate);
+            forecast.put("daysRemaining", daysRemaining);
+            
+            if (daysRemaining < 7) {
+                forecast.put("status", "CRITICAL");
+            } else if (daysRemaining < 30) {
+                forecast.put("status", "WARNING");
+            } else {
+                forecast.put("status", "NOMINAL");
+            }
+            
+            forecasts.add(forecast);
+        }
         
         return forecasts;
     }

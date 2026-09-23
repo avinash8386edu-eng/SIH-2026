@@ -31,13 +31,15 @@
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo" style="color: #00E5FF;">POLARIS</div>
-            <a href="dashboard.html">Expedition Planning</a>
-            <a href="cargo.html">Cargo Tracking</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="personnel.html">Personnel Movement</a>
-            <a href="satellite.html" class="active">Satellite Routing</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">🗺️ Expedition Planning</a>
+            <a href="cargo.html">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html">🚶 Personnel Movement</a>
+            <a href="satellite.html" class="active">🛰️ Satellite Routing</a>
+            <a href="fuel.html">⛽ Fuel Monitoring</a>
+            <a href="emergency.html">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
         </div>
 
         <div class="main-content">
@@ -77,6 +79,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="js/websocket.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script src="js/global-ui.js"></script>
 </body>
 </html>
 

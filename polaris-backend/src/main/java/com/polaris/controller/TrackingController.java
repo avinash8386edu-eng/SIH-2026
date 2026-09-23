@@ -31,23 +31,13 @@ public class TrackingController {
 
     @GetMapping("/live")
     public ResponseEntity<List<TrackingEvent>> getLiveTracking() {
-        List<TrackingEvent> allEvents = trackingEventRepository.findAll();
-        // Group by entityType+entityId and get latest
-        Map<String, TrackingEvent> latestEvents = allEvents.stream()
-                .collect(Collectors.toMap(
-                        e -> e.getEntityType() + "-" + e.getEntityId(),
-                        e -> e,
-                        (e1, e2) -> e1.getTimestamp().isAfter(e2.getTimestamp()) ? e1 : e2
-                ));
-        return ResponseEntity.ok(List.copyOf(latestEvents.values()));
+        List<TrackingEvent> latestEvents = trackingEventRepository.findLatestTrackingEvents();
+        return ResponseEntity.ok(latestEvents);
     }
 
     @GetMapping("/history/{entityType}/{entityId}")
     public ResponseEntity<List<TrackingEvent>> getTrackingHistory(@PathVariable String entityType, @PathVariable Long entityId) {
-        List<TrackingEvent> history = trackingEventRepository.findAll().stream()
-                .filter(e -> entityType.equals(e.getEntityType()) && entityId.equals(e.getEntityId()))
-                .sorted((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()))
-                .toList();
+        List<TrackingEvent> history = trackingEventRepository.findByEntityTypeAndEntityIdOrderByTimestampDesc(entityType, entityId);
         return ResponseEntity.ok(history);
     }
 }

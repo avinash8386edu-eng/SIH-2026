@@ -18,27 +18,42 @@ public class DelayPredictor {
         List<String> factors = new ArrayList<>();
         List<String> recommendations = new ArrayList<>();
 
-        // Logic stub for compiling safely while providing the requested structure
-        // - If status is DELAYED: +0.65
-        // - If status is IN_TRANSIT: +0.15
-        // - Count delay events in cargo_events: each adds +0.08 (cap at 0.4)
-        // - If weight > 5000: +0.10
-        // - If priority is CRITICAL: -0.10
+        Optional<com.polaris.model.Cargo> cargoOpt = cargoRepository.findById(cargoId);
+        if (cargoOpt.isPresent()) {
+            com.polaris.model.Cargo cargo = cargoOpt.get();
+            if (cargo.getStatus() == com.polaris.model.CargoStatus.DELAYED) {
+                probability += 0.65f;
+                factors.add("Cargo already marked as DELAYED.");
+            } else if (cargo.getStatus() == com.polaris.model.CargoStatus.IN_TRANSIT) {
+                probability += 0.15f;
+                factors.add("Cargo is IN_TRANSIT.");
+            }
+
+            long delayEvents = cargoEventRepository.findByCargoIdOrderByTimestampAsc(cargoId).stream()
+                .filter(e -> com.polaris.model.CargoEventType.DELAYED.equals(e.getEventType()))
+                .count();
+            if (delayEvents > 0) {
+                probability += Math.min(delayEvents * 0.08f, 0.40f);
+                factors.add("Cargo has " + delayEvents + " historical delay events.");
+            }
+            
+            if (cargo.getWeight() != null && cargo.getWeight() > 5000) {
+                probability += 0.10f;
+                factors.add("Heavy cargo (>5000kg) typically incurs handling delays.");
+            }
+        }
         
         probability = Math.min(probability, 0.95f);
         probability = Math.max(probability, 0.0f);
 
-        String riskLevel = "LOW";
-        if (probability >= 0.7) riskLevel = "HIGH";
-        else if (probability >= 0.4) riskLevel = "MEDIUM";
+        int probPercent = (int)(probability * 100);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("cargoCode", "C-" + cargoId);
-        result.put("delayProbability", probability);
-        result.put("estimatedDelayHours", 0);
-        result.put("riskLevel", riskLevel);
-        result.put("factors", factors);
+        result.put("cargoId", cargoId);
+        result.put("delayProbability", probPercent);
+        result.put("delayRiskFactors", factors);
         result.put("recommendations", recommendations);
         return result;
     }
 }
+

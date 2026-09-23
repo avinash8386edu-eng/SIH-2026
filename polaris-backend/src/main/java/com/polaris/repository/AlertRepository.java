@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findByStatus(AlertStatus status);
+    long countByStatus(AlertStatus status);
     List<Alert> findByStationId(Long stationId);
     List<Alert> findByStatusAndSeverity(AlertStatus status, AlertSeverity severity);
 }
+

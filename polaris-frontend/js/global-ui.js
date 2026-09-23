@@ -41,8 +41,14 @@ function injectGlobalUI() {
     // Top Bar Container
     const topBar = document.createElement('div');
     topBar.className = 'top-ui-bar';
-    topBar.style.marginTop = '35px'; // Offset for the banner
-    document.body.appendChild(topBar);
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.prepend(topBar);
+    } else {
+        topBar.style.marginTop = '35px'; // Offset for the banner
+        document.body.prepend(topBar);
+    }
+    document.body.classList.add('has-vsat');
 
     // Power Mode Toggle
     const powerBtn = document.createElement('div');
@@ -164,28 +170,4 @@ async function updateNetworkWidget() {
             console.error("Could not check offline queue", e);
         }
     }
-}
-function exportToExcel(tableId, filename) {
-    const table = document.getElementById(tableId);
-    if (!table) { alert('Table data not ready'); return; }
-    
-    let csv = [];
-    const rows = table.querySelectorAll('tr');
-    
-    for (let i = 0; i < rows.length; i++) {
-        let row = [], cols = rows[i].querySelectorAll('td, th');
-        for (let j = 0; j < cols.length; j++) {
-            row.push('\"' + cols[j].innerText.replace(/\"/g, '\"\"') + '\"');
-        }
-        csv.push(row.join(','));
-    }
-    
-    const csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
-    const downloadLink = document.createElement('a');
-    downloadLink.download = filename + '.csv';
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    downloadLink.style.display = 'none';
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
 }

@@ -21,8 +21,7 @@ public class TransportController {
     @GetMapping
     public ResponseEntity<List<Transport>> getAllTransports(@RequestParam(required = false) TransportStatus status) {
         if (status != null) {
-            // Find by status if repo has it, or stream
-            return ResponseEntity.ok(transportRepository.findAll().stream().filter(t -> t.getStatus() == status).toList());
+            return ResponseEntity.ok(transportRepository.findByStatus(status));
         }
         return ResponseEntity.ok(transportRepository.findAll());
     }
@@ -38,3 +37,4 @@ public class TransportController {
                 .orElseThrow(() -> new ResourceNotFoundException("Transport not found with id: " + id)));
     }
 }
+

@@ -27,32 +27,34 @@
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo" style="color: #00E5FF;">POLARIS</div>
-            <a href="dashboard.html">Expedition Planning</a>
-            <a href="cargo.html">Cargo Tracking</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="personnel.html" class="active">Personnel Movement</a>
-            <a href="satellite.html">Satellite Routing</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">🗺️ Expedition Planning</a>
+            <a href="cargo.html">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html" class="active">🚶 Personnel Movement</a>
+            <a href="satellite.html">🛰️ Satellite Routing</a>
+            <a href="fuel.html">⛽ Fuel Monitoring</a>
+            <a href="emergency.html">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
         </div>
 
         <div class="main-content">
             <div style="display:flex; justify-content:space-between;">
-                <h2 style="color: #00E5FF;">??????? ISRO Live Radar & Personnel Status</h2>
-                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">???? Export Ministry Excel Report</button>
+                <h2 style="color: #00E5FF;">🛰️ ISRO Live Radar & Personnel Status</h2>
+                <button class="btn" style="background:#2ECC71; color:#000; font-weight:bold;" onclick="exportToExcel('personnelTable', 'Polaris_Personnel_Report')">📊 Export Ministry Excel Report</button>
             </div>
             
             <div class="dashboard-grid">
                 <div class="stat-card" style="border-left-color:#F1C40F;">
-                    <h4>???? On Traverse (Active)</h4>
+                    <h4>🏔️ On Traverse (Active)</h4>
                     <h2 id="traverseCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#E67E22;">
-                    <h4>???? Quarantine / Acclimatization</h4>
+                    <h4>🏥 Quarantine / Acclimatization</h4>
                     <h2 id="quarantineCount">0</h2>
                 </div>
                 <div class="stat-card" style="border-left-color:#3498DB;">
-                    <h4>???? Transit (On Vessel)</h4>
+                    <h4>🚢 Transit (On Vessel)</h4>
                     <h2 id="vesselCount">0</h2>
                 </div>
             </div>
@@ -62,12 +64,12 @@
                 
                 <!-- Live Blizzard Prediction Widget -->
                 <div class="weather-panel">
-                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">?????? NRSC Weather</h3>
-                    <p style="margin:5px 0;"><strong>Temp:</strong> -42??C (Feels -55??C)</p>
+                    <h3 style="margin:0 0 10px 0; color:#00E5FF;">📡 NRSC Weather</h3>
+                    <p style="margin:5px 0;"><strong>Temp:</strong> -42°C (Feels -55°C)</p>
                     <p style="margin:5px 0;"><strong>Wind:</strong> 110 km/h (Katabatic)</p>
                     <p style="margin:5px 0;"><strong>Visibility:</strong> 200m</p>
                     <hr style="border-color:#555;">
-                    <p class="blizzard-warn">?????? BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
+                    <p class="blizzard-warn">⚠️ BLIZZARD PREDICTION:<br>Severe Storm hitting Maitri in 45 mins. AUTO-ALERT sent to field teams to return immediately!</p>
                 </div>
             </div>
 
@@ -173,7 +175,7 @@
                         const etaTime = new Date(statusObj.etaTimestamp);
                         if (Date.now() > etaTime.getTime()) {
                             etaStyle = 'color:#E74C3C; font-weight:bold; animation: blink 1s infinite;';
-                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">???? TRIGGER AUTO-SOS</button>`;
+                            actionBtn = `<button class="btn" style="background:#E74C3C; color:white; padding:5px;" onclick="triggerAutoSOS('${p.name}')">🚨 TRIGGER AUTO-SOS</button>`;
                         } else {
                             actionBtn = `<span style="color:#2ECC71;">ETA Valid</span>`;
                         }
@@ -184,7 +186,7 @@
                     let baseSp = 95 + Math.floor(Math.random()*5);
                     let baseTemp = (36.5 + (Math.random()*0.5)).toFixed(1);
                     
-                    let vitalsHtml = `<span id="vital-hr-${p.id}">?????? ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">???? ${baseSp}%</span> | ??????? ${baseTemp}??C`;
+                    let vitalsHtml = `<span id="vital-hr-${p.id}">❤️ ${baseHr} BPM</span> | <span id="vital-sp-${p.id}">🫁 ${baseSp}%</span> | 🌡️ ${baseTemp}°C`;
 
                     tbody.innerHTML += `
                         <tr id="row-user-${p.id}">
@@ -196,7 +198,7 @@
                             <td style="${etaStyle}">${statusObj.etaLabel || 'N/A'}</td>
                             <td>
                                 ${actionBtn}
-                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">?????? Sim Vitals</button>
+                                <br><button onclick="simulateCardiacEvent(${p.id}, '${p.name}')" style="margin-top:5px; background:transparent; border:1px solid #E74C3C; color:#E74C3C; padding:3px; cursor:pointer; font-size:11px;">⚠️ Sim Vitals</button>
                             </td>
                         </tr>
                     `;
@@ -217,10 +219,31 @@
             } catch(e) { console.error(e); }
         }
 
-                
-
         function triggerAutoSOS(name) {
             alert(`Manual Override: Sent high-priority distress signal to ${name}'s vehicle and Base Commander!`);
+        }
+
+        async function simulateCardiacEvent(id, name) {
+            alert(`⚠️ CRITICAL: Simulating Vitals Drop for ${name}`);
+            try {
+                const payload = {
+                    title: `MEDICAL EMERGENCY: Vitals Critical - ${name}`,
+                    message: `Telemetry indicates severe cardiac abnormality for ID ${id}. Immediate medevac recommended.`,
+                    alertType: "MEDICAL",
+                    severity: "EMERGENCY",
+                    entityType: "PERSONNEL",
+                    entityId: id
+                };
+                const res = await apiCall('/alerts', 'POST', payload);
+                if (res._offlineQueued) {
+                    alert("OFFLINE: Cardiac Alert queued for sync.");
+                } else {
+                    alert("Cardiac Alert dispatched to Base Commander and Medical Bay.");
+                }
+            } catch (e) {
+                console.error("Failed to trigger alert", e);
+                alert("ERR: Unable to trigger Medical Alert. System Offline?");
+            }
         }
 
         function exportToExcel(tableId, filename) {
@@ -234,13 +257,9 @@
         setInterval(loadPersonnel, 30000); // Check ETA every 30s
     </script>
     <!-- WebSocket Dependencies -->
+    <script src="js/db.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <script src="js/websocket.js"></script>
 </body>
 </html>
-
-
-
-
-

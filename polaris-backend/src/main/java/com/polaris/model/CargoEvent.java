@@ -27,8 +27,13 @@ public class CargoEvent {
     private Double longitude;
     private String notes;
 
-    @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp;
+
+    @PrePersist
+    protected void onCreate() {
+        if (timestamp == null) timestamp = LocalDateTime.now();
+    }
 
     private String updatedBy;
 }
+

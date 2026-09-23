@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,13 +12,15 @@
     <div class="app-container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo" style="color: var(--accent-cyan);">POLARIS</div>
-            <a href="dashboard.html" class="active">Expedition Planning</a>
-            <a href="cargo.html">Cargo Tracking</a>
-            <a href="inventory.html">Inventory</a>
-            <a href="personnel.html">Personnel Movement</a>
-            <a href="satellite.html">Satellite Routing</a>
-            <a href="#" onclick="logout()" style="margin-top: auto;">Logout / Main Menu</a>
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html" class="active">🗺️ Expedition Planning</a>
+            <a href="cargo.html">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html">🚶 Personnel Movement</a>
+            <a href="satellite.html">🛰️ Satellite Routing</a>
+            <a href="fuel.html">⛽ Fuel Monitoring</a>
+            <a href="emergency.html">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
         </div>
 
         <div class="main-content">
@@ -73,12 +75,12 @@
             const userMsg = input.value.trim();
             if(!userMsg) return;
             
-            chat.innerHTML += <div style="color:#fff; margin-top:10px;">> <b>CMDR:</b> </div>;
+            chat.innerHTML += `<div style="color:#fff; margin-top:10px;">> <b>CMDR:</b> ${userMsg}</div>`;
             input.value = '';
             chat.scrollTop = chat.scrollHeight;
 
             const responseId = 'gpt-resp-' + Date.now();
-            chat.innerHTML += <div id="" style="color:var(--accent-cyan); margin-top:5px; padding-left:10px; border-left:2px solid var(--accent-cyan);">> <b>POLAR-GPT:</b> <span class="typing">Processing...</span></div>;
+            chat.innerHTML += `<div id="${responseId}" style="color:var(--accent-cyan); margin-top:5px; padding-left:10px; border-left:2px solid var(--accent-cyan);">> <b>POLAR-GPT:</b> <span class="typing">Processing...</span></div>`;
             chat.scrollTop = chat.scrollHeight;
             
             const respDiv = document.getElementById(responseId);
@@ -87,22 +89,32 @@
             setTimeout(async () => {
                 let finalReply = "";
                 try {
-                    if (txt.includes('diesel') || txt.includes('fuel') || txt.includes('hsd')) {
+                    if (txt.includes('risk') || txt.includes('status')) {
+                        const risk = await apiCall('/intelligence/risk-score');
+                        finalReply = `[POLAR_INTELLIGENCE: RISK_ENGINE]\nOverall Base Risk: ${risk.riskLevel} (Score: ${risk.overallScore}/100)\nFactors: ${risk.contributingFactors.join(", ")}`;
+                    } else if (txt.includes('anomaly') || txt.includes('anomalies')) {
+                        const anomalies = await apiCall('/intelligence/anomalies');
+                        if (anomalies && anomalies.length > 0) {
+                            finalReply = `[POLAR_INTELLIGENCE: DETECTED_ANOMALIES]\nFound ${anomalies.length} active anomalies!\nLatest: ${anomalies[0].anomalyType} - ${anomalies[0].description}`;
+                        } else {
+                            finalReply = `[POLAR_INTELLIGENCE: DETECTED_ANOMALIES]\nZero anomalies detected across all telemetry streams.`;
+                        }
+                    } else if (txt.includes('diesel') || txt.includes('fuel') || txt.includes('hsd')) {
                         const items = await apiCall('/inventory');
                         const hsd = items.find(i => i.itemName.toLowerCase().includes("diesel")) || {quantity: 350000};
-                        finalReply = [NLP_MATCH: 'fuel'] -> We have  Liters of High-Speed Diesel (HSD) at Bharati.\nPredictive ML Model indicates a winter burn rate of 200L/day.\nAnalysis: Secure for  days.;
+                        finalReply = `[NLP_MATCH: 'fuel'] -> We have ${hsd.quantity} Liters of High-Speed Diesel (HSD) at Bharati.\nPredictive ML Model indicates a winter burn rate of 200L/day.\nAnalysis: Secure for ${Math.floor(hsd.quantity/200)} days.`;
                     } else if (txt.includes('personnel') || txt.includes('vehicle') || txt.includes('telemetry')) {
                         const tracking = await apiCall('/tracking/live');
                         if (tracking && tracking.length > 0) {
-                            finalReply = [NLP_MATCH: 'tracking'] -> Live Telemetry Active.\nTracking  active vehicles. Latest: ID  at  km/h.;
+                            finalReply = `[NLP_MATCH: 'tracking'] -> Live Telemetry Active.\nTracking ${tracking.length} active vehicles. Latest: ID ${tracking[0].entityId} at ${tracking[0].speed} km/h.`;
                         } else {
                             finalReply = "[NLP_MATCH: 'tracking'] -> No vehicles are currently broadcasting live telemetry.";
                         }
                     } else {
-                        finalReply = Command parsed heuristically. Operational logs show nominal status. (For Demo: Ask about 'diesel' or 'telemetry').;
+                        finalReply = "Command parsed heuristically. Try asking about 'risk', 'anomaly', 'diesel', or 'telemetry'.";
                     }
                 } catch(e) {
-                    finalReply = "ERR_CONNECTION_REFUSED: Could not access live SQL Ledger.";
+                    finalReply = "ERR_CONNECTION_REFUSED: Could not access intelligence sub-routines.";
                 }
 
                 respDiv.innerHTML = '> <b>POLAR-GPT:</b> <br>';
@@ -133,7 +145,7 @@
             const msg = msgs[Math.floor(Math.random() * msgs.length)];
             const time = new Date().toLocaleTimeString('en-US', {hour12:false});
             const p = document.createElement('div');
-            p.innerText = [] ;
+            p.innerText = `[${time}] ${msg}`;
             logDiv.appendChild(p);
             logDiv.scrollTop = logDiv.scrollHeight;
             if(logDiv.children.length > 6) logDiv.removeChild(logDiv.firstChild);
@@ -193,7 +205,7 @@
             const logDiv = document.getElementById('auto-log');
             if(logDiv) {
                 const time = new Date().toLocaleTimeString('en-US', {hour12:false});
-                logDiv.innerHTML += <div style="color:var(--accent-red);">[] CRITICAL: AI sealed HSD Valve A to stop leakage!</div>;
+                logDiv.innerHTML += `<div style="color:var(--accent-red);">[${time}] CRITICAL: AI sealed HSD Valve A to stop leakage!</div>`;
                 logDiv.scrollTop = logDiv.scrollHeight;
             }
             fuelTank1.material.color.setHex(0xE74C3C);

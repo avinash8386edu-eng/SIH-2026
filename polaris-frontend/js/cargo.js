@@ -97,71 +97,81 @@ async function scanCargo(id, name) {
     }
 }
 
-function exportAL1403() {
-    // Generate a professional printable Ministry Manifest (AL-1403)
-    const printWindow = window.open('', '_blank');
-    const date = new Date().toLocaleString('en-IN');
-    
-    const html = `
-        <html>
-        <head>
-            <title>AL-1403 Ministry Manifest</title>
-            <style>
-                body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; }
-                .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-                .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
-                .header p { margin: 5px 0; font-size: 14px; }
-                .meta { display: flex; justify-content: space-between; margin-bottom: 30px; font-weight: bold; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-                th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-                th { background-color: #f0f0f0; }
-                .footer { margin-top: 50px; text-align: center; font-style: italic; font-size: 12px; }
-                .stamp { position: absolute; right: 50px; bottom: 50px; color: red; border: 3px solid red; border-radius: 5px; padding: 10px; font-weight: bold; font-size: 20px; transform: rotate(-15deg); opacity: 0.7; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>Government of India</h1>
-                <h2>National Centre for Polar and Ocean Research (NCPOR)</h2>
-                <p>FORM AL-1403: ANTARCTIC EXPEDITION CARGO MANIFEST</p>
-            </div>
-            
-            <div class="meta">
-                <div>Route: Maitri -> Bharathi</div>
-                <div>Date: ${date}</div>
-                <div>Clearance: LEVEL 4 (CRITICAL)</div>
-            </div>
+async function exportAL1403() {
+    try {
+        const cargoList = await apiCall('/cargo');
+        let rows = '';
+        cargoList.forEach(c => {
+            rows += `<tr><td>${c.cargoCode}</td><td>${c.name}</td><td>${c.category || ''}</td><td>${c.weight || 'N/A'} kg</td><td>${c.status}</td><td>${c.priority || 'NORMAL'}</td></tr>`;
+        });
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cargo Code</th>
-                        <th>Payload Classification</th>
-                        <th>Status</th>
-                        <th>ISO-86 Temp Requirement</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>CG-8832</td><td>Ice Core Strata Targets</td><td>CLEARED</td><td>-55°C STRICT</td></tr>
-                    <tr><td>FL-9901</td><td>Aviation Turbine Fuel (ATF)</td><td>CLEARED</td><td>NOMINAL</td></tr>
-                    <tr><td>MD-1044</td><td>Trauma MedKits (x50)</td><td>CLEARED</td><td>+5°C to +15°C</td></tr>
-                    <tr><td>SC-2201</td><td>Seismograph Sensors</td><td>INSPECTION</td><td>NOMINAL</td></tr>
-                </tbody>
-            </table>
+        const printWindow = window.open('', '_blank');
+        const date = new Date().toLocaleString('en-IN');
 
-            <p><strong>DECLARATION:</strong> All listed payloads comply with the Antarctic Treaty System (ATS) environmental protection protocols. Hazardous materials are triple-sealed per standard operating procedures.</p>
-
-            <div class="stamp">CLEARED FOR DEPARTURE</div>
-
-            <div class="footer">
-                Generated autonomously by POLARIS AI Edge System.
-            </div>
-            <script>
-                setTimeout(() => { window.print(); }, 500);
-            </script>
-        </body>
-        </html>
-    `;
-    printWindow.document.write(html);
-    printWindow.document.close();
+        const html = `
+            <html>
+            <head>
+                <title>AL-1403 Ministry Manifest</title>
+                <style>
+                    body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; }
+                    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+                    .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+                    .header p { margin: 5px 0; font-size: 14px; }
+                    .meta { display: flex; justify-content: space-between; margin-bottom: 30px; font-weight: bold; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                    th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+                    th { background-color: #f0f0f0; }
+                    .footer { margin-top: 50px; text-align: center; font-style: italic; font-size: 12px; }
+                    .stamp { position: absolute; right: 50px; bottom: 50px; color: red; border: 3px solid red; border-radius: 5px; padding: 10px; font-weight: bold; font-size: 20px; transform: rotate(-15deg); opacity: 0.7; }
+                    .signatures { display: flex; justify-content: space-between; margin-top: 80px; }
+                    .sig-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Government of India</h1>
+                    <h2>National Centre for Polar and Ocean Research (NCPOR)</h2>
+                    <p>FORM AL-1403: ANTARCTIC EXPEDITION CARGO MANIFEST</p>
+                </div>
+                <div class="meta">
+                    <div>Expedition: 43rd ISEA</div>
+                    <div>Date: ${date}</div>
+                    <div>Clearance: LEVEL-5 (CONFIDENTIAL)</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cargo Code</th>
+                            <th>Nomenclature</th>
+                            <th>Category</th>
+                            <th>Weight</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+                <p><strong>DECLARATION:</strong> All listed payloads comply with the Antarctic Treaty System (ATS) environmental protection protocols. Hazardous materials are triple-sealed per standard operating procedures.</p>
+                <div class="stamp">CLEARED FOR DEPARTURE</div>
+                <div class="signatures">
+                    <div class="sig-line">Logistics Officer Signature</div>
+                    <div class="sig-line">Base Commander Signature</div>
+                </div>
+                <div class="footer">
+                    Generated autonomously by POLARIS AI Edge System.
+                </div>
+                <script>
+                    setTimeout(() => { window.print(); }, 500);
+                </script>
+            </body>
+            </html>
+        `;
+        printWindow.document.write(html);
+        printWindow.document.close();
+    } catch(e) {
+        alert("Failed to generate AL-1403 report. Backend offline? " + e.message);
+    }
 }
+

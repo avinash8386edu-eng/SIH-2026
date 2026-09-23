@@ -7,40 +7,137 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
-</head>
 <body class="oled-theme">
+    <style>
+        /* Pure Dark Theme */
+        body.oled-theme {
+            background-color: #000;
+        }
+        /* Make Aurora/Snow Canvas normal */
+        #polar-canvas {
+            opacity: 1.0;
+        }
+
+        /* Sci-Fi Boot Sequence Styles */
+        #boot-sequence {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10%;
+            color: var(--accent-cyan);
+            font-family: monospace;
+            font-size: 1.5rem;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .boot-text {
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--accent-cyan);
+        }
+        
+        /* Glitch Animation */
+        .glitch-active {
+            animation: glitch-anim 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            filter: drop-shadow(0 0 10px red);
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 3px) }
+            40% { transform: translate(-3px, -3px) }
+            60% { transform: translate(3px, 3px) }
+            80% { transform: translate(3px, -3px) }
+            100% { transform: translate(0) }
+        }
+        
+        /* Spotlight Cyber-Glow Cursor */
+        #glow-cursor {
+            position: fixed;
+            top: 0; left: 0;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.12) 0%, transparent 60%);
+            border-radius: 50%;
+            pointer-events: none; /* So it doesn't block clicks */
+            z-index: 50; /* Above background, behind text/icons if possible, or mixed */
+            mix-blend-mode: screen;
+            transform: translate(-50%, -50%);
+            will-change: transform;
+        }
+
+        /* Hide main UI initially */
+        .mission-control-header, .main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+        .ui-visible {
+            opacity: 1 !important;
+        }
+    </style>
+
+    <div id="glow-cursor"></div>
+
+    <div id="boot-sequence">
+        <div class="boot-text" id="term-1"></div>
+        <div class="boot-text" id="term-2"></div>
+        <div class="boot-text" id="term-3"></div>
+        <div class="boot-text" id="term-4" style="color: var(--accent-green);"></div>
+    </div>
     <div class="mission-control-header">
         <h1>POLARIS</h1>
+        <div class="subtitle-line"></div>
         <p>INDIAN ANTARCTIC EXPEDITION - MISSION CONTROL</p>
     </div>
     
-    <div class="dashboard-grid">
+    <div class="main-content" style="max-width: 1200px; padding-top: 0;">
+        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
             <div class="module-card commander-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'dashboard.html')">
                 <div class="icon">🗺️</div>
                 <h3>Expedition Planning</h3>
-                <p>Access Level: Commander</p>
+                <p>Base Commander</p>
             </div>
 
-            <!-- Cargo Tracking Module -->
             <div class="module-card logistics-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'cargo.html')">
                 <div class="icon">📦</div>
                 <h3>Cargo Tracking</h3>
-                <p>Access Level: Logistics Officer</p>
+                <p>Logistics Officer</p>
             </div>
 
-            <!-- Inventory Management Module -->
             <div class="module-card logistics-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'inventory.html')">
                 <div class="icon">❄️</div>
-                <h3>Inventory Management</h3>
-                <p>Access Level: Logistics Officer</p>
+                <h3>Smart Inventory</h3>
+                <p>Logistics Officer</p>
             </div>
 
-            <!-- Personnel Movement Module -->
             <div class="module-card scientist-theme" onclick="launchModule('scientist1@polaris.com', 'sci123', 'personnel.html')">
                 <div class="icon">🚶</div>
-                <h3>Personnel Movement</h3>
-                <p>Access Level: Field Scientist</p>
+                <h3>Personnel Radar</h3>
+                <p>Field Scientist</p>
             </div>
+
+            <div class="module-card commander-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'satellite.html')">
+                <div class="icon">🛰️</div>
+                <h3>Satellite Routing</h3>
+                <p>Commander / ISRO</p>
+            </div>
+
+            <div class="module-card logistics-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'fuel.html')">
+                <div class="icon">⛽</div>
+                <h3>Fuel & AI Monitor</h3>
+                <p>Base Engineer</p>
+            </div>
+
+            <div class="module-card emergency-theme" onclick="launchModule('commander@polaris.com', 'commander123', 'emergency.html')">
+                <div class="icon">🚨</div>
+                <h3>Emergency / SOS</h3>
+                <p>All Personnel</p>
+            </div>
+        </div>
     </div>
 
     <!-- Global Scripts -->
@@ -53,6 +150,178 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW Error', err));
         }
+    </script>
+    <script src="js/polar-bg.js"></script>
+    <script>
+        // Sci-Fi UI Audio Engine (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let isAudioAllowed = false;
+
+        function initAudio() {
+            if(!isAudioAllowed) {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                isAudioAllowed = true;
+            }
+        }
+        document.body.addEventListener('click', initAudio, {once: true});
+        document.body.addEventListener('mousemove', initAudio, {once: true});
+
+        function playHoverSound() {
+            if(!isAudioAllowed) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(2000, audioCtx.currentTime + 0.03);
+            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.03);
+        }
+
+        function playClickSound() {
+            if(!isAudioAllowed) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playBootSound() {
+            try {
+                if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(40, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 2.5);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.03, audioCtx.currentTime + 1.0);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.8);
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 600;
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 2.8);
+            } catch(e) {}
+        }
+
+        // Spotlight Cyber-Glow Cursor Logic
+        const cursor = document.getElementById('glow-cursor');
+        let mouseX = window.innerWidth/2, mouseY = window.innerHeight/2;
+        let cursorX = window.innerWidth/2, cursorY = window.innerHeight/2;
+
+        window.addEventListener('mousemove', e => { 
+            mouseX = e.clientX; 
+            mouseY = e.clientY; 
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.15; // Smooth trailing effect
+            cursorY += (mouseY - cursorY) * 0.15;
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Sci-Fi Boot Sequence Logic
+        document.addEventListener("DOMContentLoaded", () => {
+            const bootOverlay = document.getElementById("boot-sequence");
+            const header = document.querySelector(".mission-control-header");
+            const content = document.querySelector(".main-content");
+            
+            // Try playing boot sound immediately
+            playBootSound();
+            
+            const lines = [
+                { id: "term-1", text: "> INITIALIZING POLARIS KERNEL...", delay: 200 },
+                { id: "term-2", text: "> ESTABLISHING MAITRI STATION UPLINK...", delay: 800 },
+                { id: "term-3", text: "> SYNCING SATELLITE TELEMETRY...", delay: 1500 },
+                { id: "term-4", text: "> SYSTEM ONLINE.", delay: 2200 }
+            ];
+
+            function typeText(element, text, speed, callback) {
+                let i = 0;
+                let interval = setInterval(() => {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    if (i > text.length - 1) {
+                        clearInterval(interval);
+                        if(callback) callback();
+                    }
+                }, speed);
+            }
+
+            lines.forEach(line => {
+                setTimeout(() => {
+                    typeText(document.getElementById(line.id), line.text, 25);
+                }, line.delay);
+            });
+
+            // Trigger glitch and fade out
+            setTimeout(() => {
+                bootOverlay.classList.add("glitch-active");
+                
+                setTimeout(() => {
+                    bootOverlay.style.opacity = "0";
+                    header.classList.add("ui-visible");
+                    content.classList.add("ui-visible");
+                    
+                    setTimeout(() => {
+                        bootOverlay.style.display = "none";
+                    }, 500);
+                }, 400); // Glitch duration
+
+            }, 3000); // Total boot time
+
+            // 3D Holographic Tilt Effect (Clean & Elegant) + AUDIO
+            const cards = document.querySelectorAll('.module-card');
+            
+            cards.forEach(card => {
+                // Attach Sound Effects
+                card.addEventListener('mouseenter', () => {
+                    playHoverSound();
+                    card.style.transition = 'transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                });
+                card.addEventListener('mousedown', () => {
+                    playClickSound();
+                });
+
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -10;
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+                    card.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                });
+            });
+        });
     </script>
 </body>
 </html>

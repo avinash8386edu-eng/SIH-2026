@@ -10,13 +10,14 @@ const ASSETS = [
     '/css/main.css',
     '/js/api.js',
     '/js/auth.js',
-    '/js/map.js',
     '/js/cargo.js',
-    '/js/emergency.js',
     '/js/db.js',
     '/js/satellite.js',
     '/js/websocket.js',
+    '/js/global-ui.js',
+    '/js/advanced-sos.js',
     '/satellite.html',
+    '/fuel.html',
     '/manifest.json'
 ];
 

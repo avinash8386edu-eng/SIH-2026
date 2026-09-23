@@ -29,6 +29,11 @@ public class TrackingEvent {
     private Double batteryLevel;
     private Double signalStrength;
 
-    @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime timestamp;
+
+    @PrePersist
+    protected void onCreate() {
+        if (timestamp == null) timestamp = LocalDateTime.now();
+    }
 }
+
