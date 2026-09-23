@@ -14,7 +14,7 @@
 
 ---
 
-## 1. Project Overview & The Mission
+## ❄️ 1. Project Overview & The Mission
 
 Operating research stations at the edge of the world—**Maitri (Schirmacher Oasis)** and **Bharati (Larsemann Hills)**—presents logistical challenges unparalleled anywhere else on Earth. The Indian Antarctic Programme relies on complex supply chains spanning from Goa to Cape Town to the Antarctic Ice Shelf.
 
@@ -28,7 +28,7 @@ POLARIS is an **Offline-First, Smart-Automated web architecture** designed to op
 
 ---
 
-## 2. Core Architecture (Visual Graph)
+## 🗺️ 2. Core Architecture (Visual Graph)
 
 POLARIS operates on a highly resilient Edge-to-Cloud architecture.
 
@@ -56,26 +56,26 @@ graph TD
 
 ---
 
-## 3. Flagship Features & Workflows
+## 🚀 3. Flagship Features & Workflows
 
-### A. True Offline "Blizzard Mode" (PWA & IndexedDB)
+### 📡 A. True Offline "Blizzard Mode" (PWA & IndexedDB)
 When a field scientist loses connection during a traverse, POLARIS utilizes native browser Service Workers (`sw.js`) to cache the UI. Critical POST actions (like SOS or QR Scans) are intercepted by a background Sync Queue, stored safely in IndexedDB, and automatically replayed to the server when the VSAT link is restored. 
 
-### B. Sentinel-1 Satellite AI (A* Routing)
+### 🛰️ B. Sentinel-1 Satellite AI (A* Routing)
 Instead of static maps, POLARIS features a simulated **Satellite Routing System**. The backend dynamically evaluates a route between Maitri and Bharathi using the Haversine formula and generates randomized GeoJSON danger zones (Crevasses). An **A* pathfinding algorithm** computes the safest detour in real-time, rendered over an Esri World Imagery map via Leaflet.js.
 
-### C. POLAR-GPT (AI Subsystem Simulator)
+### 🧠 C. POLAR-GPT (AI Subsystem Simulator)
 The command dashboard features a built-in Natural Language terminal. Instead of a hardcoded mock, POLAR-GPT actively executes live SQL-backed API calls. Asking *"Do we have enough diesel?"* will fetch actual DB inventory, calculate the winter burn rate, and respond autonomously. 
 
-### D. Live WebSocket Telemetry & SOS
+### 🚨 D. Live WebSocket Telemetry & SOS
 Using `SockJS` and `STOMP` protocols over `/ws-emergency`, any SOS triggered by a PDA instantly bypasses REST polling and broadcasts a massive, screen-locking Red Alert popup to every active terminal across the base. Vehicle telemetry GPS coordinates also stream live, causing map markers to move in real-time.
 
-### E. Cyber-Ice Command Center UI/UX
+### 🧊 E. Cyber-Ice Command Center UI/UX
 The entire frontend has been overhauled using a custom `Glassmorphism` CSS framework. Featuring OLED pure black backgrounds, frosted glass panels (`backdrop-filter: blur`), and glowing cyan/yellow accents.
 
 ---
 
-## 4. State Diagram: The SOS Lifecycle
+## 🔄 4. State Diagram: The SOS Lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -99,7 +99,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Installation & Testing Guide
+## 💻 5. Installation & Testing Guide
 
 ### Prerequisites
 * Java 17+
