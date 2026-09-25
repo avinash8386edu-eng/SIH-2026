@@ -22,6 +22,7 @@ public class CargoController {
 
     private final CargoRepository cargoRepository;
     private final CargoEventRepository cargoEventRepository;
+    private final com.polaris.service.DocumentArchiveService documentArchiveService;
 
     @GetMapping
     public ResponseEntity<List<Cargo>> getAllCargo(@RequestParam(required = false) CargoStatus status) {
@@ -72,7 +73,14 @@ public class CargoController {
                 .orElseThrow(() -> new ResourceNotFoundException("Cargo not found with id: " + id));
         String statusStr = statusMap.get("status");
         if (statusStr != null) {
-            cargo.setStatus(CargoStatus.valueOf(statusStr.toUpperCase()));
+            CargoStatus newStatus = CargoStatus.valueOf(statusStr.toUpperCase());
+            cargo.setStatus(newStatus);
+            
+            if (newStatus == CargoStatus.ARRIVED || newStatus == CargoStatus.DELIVERED) {
+                String title = "Cargo Delivery Certificate: " + cargo.getCargoCode();
+                String content = "Cargo " + cargo.getName() + " (" + cargo.getCargoCode() + ") reached destination station. Status: " + newStatus;
+                documentArchiveService.archiveCargoCert(title, content, cargo.getExpeditionId(), "SYSTEM");
+            }
         }
         return ResponseEntity.ok(cargoRepository.save(cargo));
     }

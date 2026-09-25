@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Flag_of_Antarctica.svg" alt="Antarctica Flag" width="120" />
-  <h1>🇮🇳 POLARIS</h1>
-  <h3>Autonomous Expedition Command & Edge Logistics System</h3>
+  <h1>🇮🇳 HIM-SETU</h1>
+  <h3>Autonomous Expedition Command & Edge Logistics System<br/><strong>Developed by Team YantraMinds</strong></h3>
   <p><em>Built for the 43rd Indian Scientific Expedition to Antarctica (ISEA)</em></p>
   
   ![Version](https://img.shields.io/badge/Version-3.0.0--PROD-blue.svg)
@@ -23,14 +23,14 @@ Operating research stations at the edge of the world—**Maitri (Schirmacher Oas
 * **Dangerous Terrain:** Crevasses shift daily, making static routes extremely hazardous.
 * **Paper-bound Logistics:** Critical cargo manifests (AL-1403) are tracked manually.
 
-**The POLARIS Solution:**
-POLARIS is an **Offline-First, Smart-Automated web architecture** designed to operate securely within a local station intranet, synchronize globally via STOMP WebSockets, and leverage simulated Satellite AI to compute safe traversal routes.
+**The Him-Setu Solution:**
+Him-Setu is an **Offline-First, Smart-Automated web architecture** designed to operate securely within a local station intranet, synchronize globally via STOMP WebSockets, and leverage simulated Satellite AI to compute safe traversal routes.
 
 ---
 
 ## 🗺️ 2. Core Architecture (Visual Graph)
 
-POLARIS operates on a highly resilient Edge-to-Cloud architecture.
+Him-Setu operates on a highly resilient Edge-to-Cloud architecture.
 
 ```mermaid
 graph TD
@@ -45,7 +45,7 @@ graph TD
         API <--> DB[(MySQL Ledger)]
         WS --> UI[Command Center Dashboard]
         UI -->|Three.js| DT[3D Digital Twin]
-        UI -->|Heuristics| AI[POLAR-GPT Engine]
+        UI -->|Heuristics| AI[HIM-GPT Engine]
     end
     
     subgraph "Ministry (NCPOR, Goa)"
@@ -59,13 +59,13 @@ graph TD
 ## 🚀 3. Flagship Features & Workflows
 
 ### 📡 A. True Offline "Blizzard Mode" (PWA & IndexedDB)
-When a field scientist loses connection during a traverse, POLARIS utilizes native browser Service Workers (`sw.js`) to cache the UI. Critical POST actions (like SOS or QR Scans) are intercepted by a background Sync Queue, stored safely in IndexedDB, and automatically replayed to the server when the VSAT link is restored. 
+When a field scientist loses connection during a traverse, Him-Setu utilizes native browser Service Workers (`sw.js`) to cache the UI. Critical POST actions (like SOS or QR Scans) are intercepted by a background Sync Queue, stored safely in IndexedDB, and automatically replayed to the server when the VSAT link is restored. 
 
 ### 🛰️ B. Sentinel-1 Satellite AI (A* Routing)
-Instead of static maps, POLARIS features a simulated **Satellite Routing System**. The backend dynamically evaluates a route between Maitri and Bharathi using the Haversine formula and generates randomized GeoJSON danger zones (Crevasses). An **A* pathfinding algorithm** computes the safest detour in real-time, rendered over an Esri World Imagery map via Leaflet.js.
+Instead of static maps, Him-Setu features a simulated **Satellite Routing System**. The backend dynamically evaluates a route between Maitri and Bharathi using the Haversine formula and generates randomized GeoJSON danger zones (Crevasses). An **A* pathfinding algorithm** computes the safest detour in real-time, rendered over an Esri World Imagery map via Leaflet.js.
 
-### 🧠 C. POLAR-GPT (AI Subsystem Simulator)
-The command dashboard features a built-in Natural Language terminal. Instead of a hardcoded mock, POLAR-GPT actively executes live SQL-backed API calls. Asking *"Do we have enough diesel?"* will fetch actual DB inventory, calculate the winter burn rate, and respond autonomously. 
+### 🧠 C. HIM-GPT (AI Subsystem Simulator)
+The command dashboard features a built-in Natural Language terminal. Instead of a hardcoded mock, HIM-GPT actively executes live SQL-backed API calls. Asking *"Do we have enough diesel?"* will fetch actual DB inventory, calculate the winter burn rate, and respond autonomously. 
 
 ### 🚨 D. Live WebSocket Telemetry & SOS
 Using `SockJS` and `STOMP` protocols over `/ws-emergency`, any SOS triggered by a PDA instantly bypasses REST polling and broadcasts a massive, screen-locking Red Alert popup to every active terminal across the base. Vehicle telemetry GPS coordinates also stream live, causing map markers to move in real-time.
@@ -122,7 +122,7 @@ mvn spring-boot:run -DskipTests
 *Backend runs natively on `http://localhost:8080`.*
 
 ### Step 3: Frontend (Vanilla Client)
-POLARIS uses a highly optimized, no-build Vanilla JS frontend.
+Him-Setu uses a highly optimized, no-build Vanilla JS frontend.
 ```bash
 cd polaris-frontend
 # Use any local HTTP server, e.g., Python:
