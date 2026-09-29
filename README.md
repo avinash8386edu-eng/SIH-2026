@@ -73,14 +73,17 @@ Him-Setu operates on a highly resilient 4-Tier Edge-to-Cloud architecture to ens
 
 ## 5. Screenshots
 
-![Command Dashboard Placeholder](https://via.placeholder.com/1000x500/111827/00E5FF?text=HIM-SETU+Command+Dashboard)  
-*Figure 1: Main Command Dashboard featuring real-time telemetry.*
+![All Expeditions](screenshots/all_expeditions.png)  
+*Figure 1: High-Level Archive & Classified ISEA Dossiers.*
 
-![Cryo-Chain Analytics Widget Placeholder](https://via.placeholder.com/1000x500/111827/00FF66?text=Cryo-Chain+Analytics+Widget)  
-*Figure 2: Cryo-Chain Analytics widget predicting thermal degradation.*
+![Expedition Planner](screenshots/planner.png)  
+*Figure 2: Him-Setu Payload & Survival Configurator featuring live drag & drop logistics and hazard simulation.*
 
-![Expedition Safe Grid Placeholder](https://via.placeholder.com/1000x500/111827/FF003C?text=Expedition+Safe+Grid+Live+Map)  
-*Figure 3: Live geospatial tracking of deep-field traverse convoys.*
+![Fault Logs](screenshots/maintenance.png)  
+*Figure 3: Preventative Maintenance Diagnostics with real-time hardware telemetry and offline ticketing.*
+
+![Mission Assignments](screenshots/assignments.png)  
+*Figure 4: Active Personnel Duty Roster showing critical and routine deep-field assignments.*
 
 ---
 
