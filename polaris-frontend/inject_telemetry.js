@@ -1,83 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HIM-SETU - Expedition Command</title>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
-    
-    <!-- Dexie.js for IndexedDB -->
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-</head>
-<body class="him-setu-theme">
-    <div id="toast-container"></div>
-    <div class="app-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <i class="fa-solid fa-satellite-dish" style="color:#00e5ff; font-size:1.2rem; margin-right:10px;"></i>
-                <span class="logo-text" style="font-family:'Playfair Display', serif; font-weight:600; font-size:1.1rem; letter-spacing:2px;">HIM-SETU</span>
-                <i class="fa-solid fa-chevron-left" style="margin-left:auto; font-size:0.8rem; color:#444;"></i>
-            </div>
-            <nav class="sidebar-nav">
-                <div class="nav-section">COMMAND</div>
-                <a href="#overview" class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+const fs = require('fs');
+let html = fs.readFileSync('index.html', 'utf8');
 
-                <div class="nav-section">EXPEDITIONS</div>
-                <a href="#all-expeditions" class="nav-item"><i class="fa-solid fa-globe"></i> All Expeditions</a>
-                <a href="#overview" class="nav-item"><i class="fa-solid fa-layer-group"></i> Overview</a>
-                <a href="#planner" class="nav-item"><i class="fa-regular fa-calendar"></i> Planner</a>
-                <a href="#timeline" class="nav-item"><i class="fa-solid fa-timeline"></i> Timeline</a>
+const oldBadge = '<span class="status-indicator"><span class="green-dot"></span> OPERATIONAL</span>';
 
-                <div class="nav-section">PEOPLE</div>
-                <a href="#personnel" class="nav-item"><i class="fa-regular fa-user"></i> Personnel</a>
-                <a href="#movement" class="nav-item"><i class="fa-solid fa-route"></i> Movement</a>
-                <a href="#medical" class="nav-item"><i class="fa-solid fa-heart-pulse"></i> Medical & Training</a>
-
-                <div class="nav-section">CARGO</div>
-                <a href="#cargo-dashboard" class="nav-item"><i class="fa-solid fa-box"></i> Cargo Dashboard</a>
-                <a href="#cargo-details" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Cargo Details</a>
-                <a href="#cargo-scan" class="nav-item"><i class="fa-solid fa-qrcode"></i> QR Scanner</a>
-                <a href="#chain-of-custody" class="nav-item"><i class="fa-solid fa-link"></i> Chain of Custody</a>
-
-                <div class="nav-section">INVENTORY</div>
-                <a href="#station-inventory" class="nav-item"><i class="fa-solid fa-warehouse"></i> Station Inventory</a>
-                <a href="#transfers" class="nav-item"><i class="fa-solid fa-truck-fast"></i> Transfers</a>
-                <a href="#forecast" class="nav-item"><i class="fa-solid fa-chart-line"></i> Forecast</a>
-
-                <div class="nav-section">ASSETS</div>
-                <a href="#all-assets" class="nav-item"><i class="fa-solid fa-truck"></i> All Assets</a>
-                <a href="#assignments" class="nav-item"><i class="fa-solid fa-clipboard-user"></i> Assignments</a>
-                <a href="#maintenance" class="nav-item"><i class="fa-solid fa-wrench"></i> Maintenance</a>
-
-                <div class="nav-section" style="margin-top: 20px;">ADVANCED (HIM-SETU EXCLUSIVE)</div>
-                <a href="#intelligence" class="nav-item"><i class="fa-solid fa-brain"></i> Risk Center (AI)</a>
-                <a href="#emergency" class="nav-item" style="color:var(--alert-red);"><i class="fa-solid fa-triangle-exclamation"></i> SAR / SOS</a>
-            </nav>
-            <div class="sidebar-footer">
-                <div style="margin-bottom:8px; font-size:10px; letter-spacing:1px; color:#555;">BHARATI <span style="float:right">-19°C | 34kts</span></div>
-                <div style="font-size:10px; letter-spacing:1px; color:#555;">MAITRI <span style="float:right">-14°C | 11kts</span></div>
-            </div>
-        </aside>
-
-        <div class="main-wrapper">
-            <header class="topbar">
-                <div class="topbar-left">
-                    <span style="font-weight:600; font-size:11px; letter-spacing:1px; color:#ccc; font-family:'Inter', sans-serif;">46th ISEA &nbsp;&nbsp;&nbsp; ANTARCTICA OPERATIONS</span>
-                </div>
-                <div class="topbar-search">
-                    <i class="fa-solid fa-magnifying-glass" style="color:#555;"></i>
-                    <input type="text" placeholder="Search entities (CRG-2026-001, Bharati, Missions)...">
-                    <span class="hotkey">Ctrl+K</span>
-                </div>
-                <div class="topbar-right">
-                    <i class="fa-regular fa-sun" style="color:#777; margin-right:20px;"></i>
-                    
+const newBadge = `
 <div class="telemetry-widget" id="sat-telemetry-widget" style="position: relative; display: inline-block; cursor: pointer; margin-right: 25px;">
     <div class="sat-badge" id="sat-badge-main" style="display: flex; align-items: center; gap: 8px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); padding: 6px 14px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: #00FF66; letter-spacing: 1px; transition: all 0.3s; user-select: none;">
         <i class="fa-solid fa-satellite-dish" id="sat-icon" style="animation: pulse 2s infinite;"></i>
@@ -119,23 +45,9 @@
         </div>
     </div>
 </div>
+`;
 
-                    <i class="fa-regular fa-bell" style="color:#777; margin:0 20px;"></i>
-                    <div class="user-profile">
-                        <span class="avatar">IN</span> <span style="font-size:11px; letter-spacing:1px; color:#aaa;">SIGN IN</span>
-                    </div>
-                </div>
-            </header>
-
-            <main class="content-area" id="dynamic-content">
-                <!-- Views injected dynamically via JS -->
-            </main>
-        </div>
-    </div>
-    
-    <script type="module" src="js/app.js"></script>
-    <script src="js/planner.js"></script>
-
+const scriptInject = `
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const satWidget = document.getElementById('sat-telemetry-widget');
@@ -246,5 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 </body>
+`;
 
-</html>
+html = html.replace(oldBadge, newBadge);
+if (!html.includes('sat-telemetry-widget')) {
+    console.log("Could not find the old badge to replace.");
+} else {
+    html = html.replace('</body>', scriptInject);
+    fs.writeFileSync('index.html', html);
+    console.log('Successfully injected advanced telemetry widget!');
+}
