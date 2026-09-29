@@ -23,7 +23,6 @@
 4. [Feasibility & Impact](#4-feasibility--impact)
 5. [Screenshots](#5-screenshots)
 6. [Installation & Deployment](#6-installation--deployment)
-7. [Team YantraMinds](#7-team-yantraminds)
 
 ---
 
@@ -127,15 +126,6 @@ docker-compose up --build -d
 ```
 
 ---
-
-## 7. Team YantraMinds
-
-| Member | Role |
-| :--- | :--- |
-| **Avinash (Team Leader)** | Full-Stack Architecture & Cloud Infrastructure |
-| **Bhoomi** | Backend Systems & Database Modeling |
-| **Ankush** | AI/ML Integration & Hardware Telemetry |
-| **Aryan Srivastav** | Frontend PWA Development & UI/UX |
 
 ---
 <div align="center">
