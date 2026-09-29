@@ -2879,58 +2879,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
             </style>
 
-            <script>
-                window.runAISimulation = function() {
-                    const promptVal = document.getElementById('ai-prompt').value;
-                    if(!promptVal || promptVal.trim() === '') return;
-
-                    document.getElementById('ai-empty').style.display = 'none';
-                    document.getElementById('ai-result').style.display = 'none';
-                    document.getElementById('ai-thinking').style.display = 'flex';
-                    document.getElementById('ai-status').innerText = 'PROCESSING MODEL...';
-                    document.getElementById('ai-status').style.color = '#00E5FF';
-
-                    setTimeout(() => {
-                        document.getElementById('ai-thinking').style.display = 'none';
-                        document.getElementById('ai-result').style.display = 'flex';
-                        document.getElementById('ai-status').innerText = 'SIMULATION COMPLETE';
-                        document.getElementById('ai-status').style.color = '#00FF66';
-
-                        // NO TEMPLATE LITERALS HERE. USING STRING CONCATENATION.
-                        const resultHTML = "" +
-                            "<div style='background: rgba(255, 0, 60, 0.1); border-left: 3px solid #FF003C; padding: 15px;'>" +
-                                "<div style='color: #FF003C; font-family: var(--font-mono); font-size: 10px; font-weight: bold; margin-bottom: 5px;'>CRITICAL IMPACT DETECTED</div>" +
-                                "<div style='color: #fff; font-size: 13px; line-height: 1.5;'>If MV Vasiliy is delayed by 14 days, Maitri Station will deplete its <span style='color:#FF003C; font-weight:bold;'>Aviation Turbine Fuel (ATF)</span> reserve on Day 11, halting all inland helicopter operations.</div>" +
-                            "</div>" +
-                            "<div>" +
-                                "<div style='color: #888; font-family: var(--font-mono); font-size: 10px; margin-bottom: 10px;'>CASCADING TIMELINE</div>" +
-                                "<div style='border-left: 1px dashed #333; margin-left: 5px; padding-left: 15px; display: flex; flex-direction: column; gap: 15px;'>" +
-                                    "<div style='position: relative;'>" +
-                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #F39C12; border-radius: 50%;'></div>" +
-                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#F39C12; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 5</span> Ration rationing initiated at Maitri (2 meals/day).</div>" +
-                                    "</div>" +
-                                    "<div style='position: relative;'>" +
-                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #FF003C; border-radius: 50%;'></div>" +
-                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#FF003C; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 11</span> Helicopter grounded. Inland resupply impossible.</div>" +
-                                    "</div>" +
-                                    "<div style='position: relative;'>" +
-                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #FF003C; border-radius: 50%;'></div>" +
-                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#FF003C; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 14</span> Generator 3 shuts down to conserve remaining polar diesel.</div>" +
-                                    "</div>" +
-                                "</div>" +
-                            "</div>" +
-                            "<div style='background: rgba(0, 255, 102, 0.05); border: 1px solid #00FF66; padding: 15px; border-radius: 4px; margin-top: 10px;'>" +
-                                "<div style='color: #00FF66; font-family: var(--font-mono); font-size: 10px; font-weight: bold; margin-bottom: 5px;'><i class='fa-solid fa-check'></i> AI RECOMMENDATION</div>" +
-                                "<div style='color: #fff; font-size: 13px; line-height: 1.5;'>Immediate Action: Airdrop 20 barrels of ATF to Maitri via Kamov sling-load before Day 4 to bridge the 14-day gap. Dispatch PistenBully convoy to Ice-Shelf depot to pre-position rations.</div>" +
-                                "<button style='margin-top: 15px; background: #00FF66; color: #000; border: none; padding: 8px 15px; font-family: var(--font-mono); font-size: 10px; font-weight: bold; cursor: pointer;'>" +
-                                    "EXECUTE MITIGATION PLAN" +
-                                "</button>" +
-                            "</div>";
-                        
-                        document.getElementById('ai-result').innerHTML = resultHTML;
-                    }, 2500);
-                };
-            </script>
+            
         `,
 
         '#emergency': `
@@ -3043,105 +2992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             </style>
 
-            <script>
-                window.sosHoldTimer = null;
-                window.sosHoldProgress = 0;
-                window.sosInterval = null;
-
-                window.startSOSHold = function() {
-                    const btn = document.getElementById('sos-btn');
-                    const progContainer = document.getElementById('sos-progress-container');
-                    const progBar = document.getElementById('sos-progress-bar');
-                    if(!btn || !progContainer || !progBar) return;
-                    btn.style.transform = 'scale(0.95)';
-                    btn.style.boxShadow = '0 0 50px rgba(255,0,60,0.8), inset 0 0 30px rgba(0,0,0,0.8)';
-                    progContainer.style.display = 'block';
-                    window.sosHoldProgress = 0;
-                    window.sosHoldTimer = setInterval(() => {
-                        window.sosHoldProgress += 2;
-                        progBar.style.width = window.sosHoldProgress + '%';
-                        if (window.sosHoldProgress >= 100) {
-                            clearInterval(window.sosHoldTimer);
-                            window.triggerSOSSequence();
-                        }
-                    }, 40);
-                };
-
-                window.cancelSOSHold = function() {
-                    if(window.sosHoldTimer) clearInterval(window.sosHoldTimer);
-                    const btn = document.getElementById('sos-btn');
-                    const progContainer = document.getElementById('sos-progress-container');
-                    const progBar = document.getElementById('sos-progress-bar');
-                    if(btn) {
-                        btn.style.transform = 'scale(1)';
-                        btn.style.boxShadow = '0 10px 30px rgba(255,0,60,0.5), inset 0 0 20px rgba(0,0,0,0.5)';
-                    }
-                    if(progContainer) progContainer.style.display = 'none';
-                    if(progBar) progBar.style.width = '0%';
-                };
-
-                window.triggerSOSSequence = function() {
-                    const idle = document.getElementById('sos-idle-state');
-                    const active = document.getElementById('sos-active-state');
-                    const container = document.getElementById('emergency-container');
-                    const term = document.getElementById('sos-terminal');
-
-                    if(idle) idle.style.display = 'none';
-                    if(active) active.style.display = 'grid';
-                    if(container) container.classList.add('sos-active-bg');
-
-                    if(term) {
-                        term.innerHTML = '';
-                        const lines = [
-                            "> INITIALIZING COSPAS-SARSAT PROTOCOL...",
-                            "> ACQUIRING GPS LOCK...",
-                            "> LOCK ACQUIRED: 69° 24' 28'' S / 76° 11' 14'' E",
-                            "> ENCRYPTING DISTRESS PACKET...",
-                            "> TRANSMITTING BEACON BURST 1...",
-                            "<span style='color:#00FF66;'>> NCPOR HQ (GOA) ACKNOWLEDGED RECEIPT.</span>",
-                            "> BROADCASTING TO LOCAL ASSETS...",
-                            "<span style='color:#F39C12;'>> KAMOV HELICOPTER DIVERTED. ETA: 14m.</span>",
-                            "> ESTABLISHING CONTINUOUS TELEMETRY LOOP..."
-                        ];
-
-                        let i = 0;
-                        window.sosInterval = setInterval(() => {
-                            if (i < lines.length) {
-                                term.innerHTML += '<div>' + lines[i] + '</div>';
-                                term.scrollTop = term.scrollHeight;
-                                i++;
-                            } else {
-                                clearInterval(window.sosInterval);
-                                setInterval(() => {
-                                    if(document.getElementById('sos-terminal')){
-                                        document.getElementById('sos-terminal').innerHTML += '<div>> TX PING ' + Date.now() + ' (OK)</div>';
-                                        document.getElementById('sos-terminal').scrollTop = document.getElementById('sos-terminal').scrollHeight;
-                                    }
-                                }, 2000);
-                            }
-                        }, 600);
-                    }
-                };
-
-                window.resetSOS = function() {
-                    const idle = document.getElementById('sos-idle-state');
-                    const active = document.getElementById('sos-active-state');
-                    const container = document.getElementById('emergency-container');
-                    const progContainer = document.getElementById('sos-progress-container');
-                    const progBar = document.getElementById('sos-progress-bar');
-                    if(idle) idle.style.display = 'flex';
-                    if(active) active.style.display = 'none';
-                    if(container) container.classList.remove('sos-active-bg');
-                    if(progContainer) progContainer.style.display = 'none';
-                    if(progBar) progBar.style.width = '0%';
-                    if(window.sosHoldTimer) clearInterval(window.sosHoldTimer);
-                    if(window.sosInterval) clearInterval(window.sosInterval);
-                    let highestTimeoutId = setTimeout(";");
-                    for (let i = 0 ; i < highestTimeoutId ; i++) {
-                        clearTimeout(i); 
-                    }
-                };
-            </script>
+            
         `,
         '#cargo-scan': `
             <div class="him-setu-theme" style="height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 20px 30px; box-sizing: border-box; font-family: 'Inter', sans-serif; background: #050505;">
@@ -3658,3 +3509,195 @@ document.addEventListener('click', function(e) {
         }, 1500);
     }
 });
+
+
+// --- INJECTED MODULE LOGIC ---
+
+window.sosAudioCtx = null;
+window.sosOscillator = null;
+
+function playSiren() {
+    if (!window.sosAudioCtx) {
+        window.sosAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (window.sosOscillator) {
+        window.sosOscillator.stop();
+    }
+    window.sosOscillator = window.sosAudioCtx.createOscillator();
+    const gainNode = window.sosAudioCtx.createGain();
+    
+    window.sosOscillator.type = 'square';
+    window.sosOscillator.frequency.setValueAtTime(400, window.sosAudioCtx.currentTime);
+    
+    // Siren frequency modulation
+    let time = window.sosAudioCtx.currentTime;
+    for (let i = 0; i < 20; i++) {
+        window.sosOscillator.frequency.linearRampToValueAtTime(800, time + 0.5);
+        time += 0.5;
+        window.sosOscillator.frequency.linearRampToValueAtTime(400, time + 0.5);
+        time += 0.5;
+    }
+    
+    gainNode.gain.setValueAtTime(0.1, window.sosAudioCtx.currentTime);
+    
+    window.sosOscillator.connect(gainNode);
+    gainNode.connect(window.sosAudioCtx.destination);
+    window.sosOscillator.start();
+}
+
+function stopSiren() {
+    if (window.sosOscillator) {
+        window.sosOscillator.stop();
+        window.sosOscillator = null;
+    }
+}
+
+window.sosHoldTimer = null;
+                window.sosHoldProgress = 0;
+                window.sosInterval = null;
+
+                window.startSOSHold = function() {
+                    const btn = document.getElementById('sos-btn');
+                    const progContainer = document.getElementById('sos-progress-container');
+                    const progBar = document.getElementById('sos-progress-bar');
+                    if(!btn || !progContainer || !progBar) return;
+                    btn.style.transform = 'scale(0.95)';
+                    btn.style.boxShadow = '0 0 50px rgba(255,0,60,0.8), inset 0 0 30px rgba(0,0,0,0.8)';
+                    progContainer.style.display = 'block';
+                    window.sosHoldProgress = 0;
+                    window.sosHoldTimer = setInterval(() => {
+                        window.sosHoldProgress += 2;
+                        progBar.style.width = window.sosHoldProgress + '%';
+                        if (window.sosHoldProgress >= 100) {
+                            clearInterval(window.sosHoldTimer);
+                            window.triggerSOSSequence();
+                        }
+                    }, 40);
+                };
+
+                window.cancelSOSHold = function() {
+                    if(window.sosHoldTimer) clearInterval(window.sosHoldTimer);
+                    const btn = document.getElementById('sos-btn');
+                    const progContainer = document.getElementById('sos-progress-container');
+                    const progBar = document.getElementById('sos-progress-bar');
+                    if(btn) {
+                        btn.style.transform = 'scale(1)';
+                        btn.style.boxShadow = '0 10px 30px rgba(255,0,60,0.5), inset 0 0 20px rgba(0,0,0,0.5)';
+                    }
+                    if(progContainer) progContainer.style.display = 'none';
+                    if(progBar) progBar.style.width = '0%';
+                };
+
+                window.triggerSOSSequence = function() {
+    playSiren();
+                    const idle = document.getElementById('sos-idle-state');
+                    const active = document.getElementById('sos-active-state');
+                    const container = document.getElementById('emergency-container');
+                    const term = document.getElementById('sos-terminal');
+
+                    if(idle) idle.style.display = 'none';
+                    if(active) active.style.display = 'grid';
+                    if(container) container.classList.add('sos-active-bg');
+
+                    if(term) {
+                        term.innerHTML = '';
+                        const lines = [
+                            "> INITIALIZING COSPAS-SARSAT PROTOCOL...",
+                            "> ACQUIRING GPS LOCK...",
+                            "> LOCK ACQUIRED: 69° 24' 28'' S / 76° 11' 14'' E",
+                            "> ENCRYPTING DISTRESS PACKET...",
+                            "> TRANSMITTING BEACON BURST 1...",
+                            "<span style='color:#00FF66;'>> NCPOR HQ (GOA) ACKNOWLEDGED RECEIPT.</span>",
+                            "> BROADCASTING TO LOCAL ASSETS...",
+                            "<span style='color:#F39C12;'>> KAMOV HELICOPTER DIVERTED. ETA: 14m.</span>",
+                            "> ESTABLISHING CONTINUOUS TELEMETRY LOOP..."
+                        ];
+
+                        let i = 0;
+                        window.sosInterval = setInterval(() => {
+                            if (i < lines.length) {
+                                term.innerHTML += '<div>' + lines[i] + '</div>';
+                                term.scrollTop = term.scrollHeight;
+                                i++;
+                            } else {
+                                clearInterval(window.sosInterval);
+                                setInterval(() => {
+                                    if(document.getElementById('sos-terminal')){
+                                        document.getElementById('sos-terminal').innerHTML += '<div>> TX PING ' + Date.now() + ' (OK)</div>';
+                                        document.getElementById('sos-terminal').scrollTop = document.getElementById('sos-terminal').scrollHeight;
+                                    }
+                                }, 2000);
+                            }
+                        }, 600);
+                    }
+                };
+
+                window.resetSOS = function() {
+    stopSiren();
+                    const idle = document.getElementById('sos-idle-state');
+                    const active = document.getElementById('sos-active-state');
+                    const container = document.getElementById('emergency-container');
+                    const progContainer = document.getElementById('sos-progress-container');
+                    const progBar = document.getElementById('sos-progress-bar');
+                    if(idle) idle.style.display = 'flex';
+                    if(active) active.style.display = 'none';
+                    if(container) container.classList.remove('sos-active-bg');
+                    if(progContainer) progContainer.style.display = 'none';
+                    if(progBar) progBar.style.width = '0%';
+                    if(window.sosHoldTimer) clearInterval(window.sosHoldTimer);
+                    if(window.sosInterval) clearInterval(window.sosInterval);
+                    let highestTimeoutId = setTimeout(";");
+                    for (let i = 0 ; i < highestTimeoutId ; i++) {
+                        clearTimeout(i); 
+                    }
+                };
+window.runAISimulation = function() {
+                    const promptVal = document.getElementById('ai-prompt').value;
+                    if(!promptVal || promptVal.trim() === '') return;
+
+                    document.getElementById('ai-empty').style.display = 'none';
+                    document.getElementById('ai-result').style.display = 'none';
+                    document.getElementById('ai-thinking').style.display = 'flex';
+                    document.getElementById('ai-status').innerText = 'PROCESSING MODEL...';
+                    document.getElementById('ai-status').style.color = '#00E5FF';
+
+                    setTimeout(() => {
+                        document.getElementById('ai-thinking').style.display = 'none';
+                        document.getElementById('ai-result').style.display = 'flex';
+                        document.getElementById('ai-status').innerText = 'SIMULATION COMPLETE';
+                        document.getElementById('ai-status').style.color = '#00FF66';
+
+                        // NO TEMPLATE LITERALS HERE. USING STRING CONCATENATION.
+                        const resultHTML = "" +
+                            "<div style='background: rgba(255, 0, 60, 0.1); border-left: 3px solid #FF003C; padding: 15px;'>" +
+                                "<div style='color: #FF003C; font-family: var(--font-mono); font-size: 10px; font-weight: bold; margin-bottom: 5px;'>CRITICAL IMPACT DETECTED</div>" +
+                                "<div style='color: #fff; font-size: 13px; line-height: 1.5;'>If MV Vasiliy is delayed by 14 days, Maitri Station will deplete its <span style='color:#FF003C; font-weight:bold;'>Aviation Turbine Fuel (ATF)</span> reserve on Day 11, halting all inland helicopter operations.</div>" +
+                            "</div>" +
+                            "<div>" +
+                                "<div style='color: #888; font-family: var(--font-mono); font-size: 10px; margin-bottom: 10px;'>CASCADING TIMELINE</div>" +
+                                "<div style='border-left: 1px dashed #333; margin-left: 5px; padding-left: 15px; display: flex; flex-direction: column; gap: 15px;'>" +
+                                    "<div style='position: relative;'>" +
+                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #F39C12; border-radius: 50%;'></div>" +
+                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#F39C12; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 5</span> Ration rationing initiated at Maitri (2 meals/day).</div>" +
+                                    "</div>" +
+                                    "<div style='position: relative;'>" +
+                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #FF003C; border-radius: 50%;'></div>" +
+                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#FF003C; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 11</span> Helicopter grounded. Inland resupply impossible.</div>" +
+                                    "</div>" +
+                                    "<div style='position: relative;'>" +
+                                        "<div style='position: absolute; left: -20px; top: 2px; width: 8px; height: 8px; background: #FF003C; border-radius: 50%;'></div>" +
+                                        "<div style='color: #ccc; font-size: 12px;'><span style='color:#FF003C; font-family: var(--font-mono); font-size: 10px; margin-right: 10px;'>DAY 14</span> Generator 3 shuts down to conserve remaining polar diesel.</div>" +
+                                    "</div>" +
+                                "</div>" +
+                            "</div>" +
+                            "<div style='background: rgba(0, 255, 102, 0.05); border: 1px solid #00FF66; padding: 15px; border-radius: 4px; margin-top: 10px;'>" +
+                                "<div style='color: #00FF66; font-family: var(--font-mono); font-size: 10px; font-weight: bold; margin-bottom: 5px;'><i class='fa-solid fa-check'></i> AI RECOMMENDATION</div>" +
+                                "<div style='color: #fff; font-size: 13px; line-height: 1.5;'>Immediate Action: Airdrop 20 barrels of ATF to Maitri via Kamov sling-load before Day 4 to bridge the 14-day gap. Dispatch PistenBully convoy to Ice-Shelf depot to pre-position rations.</div>" +
+                                "<button style='margin-top: 15px; background: #00FF66; color: #000; border: none; padding: 8px 15px; font-family: var(--font-mono); font-size: 10px; font-weight: bold; cursor: pointer;'>" +
+                                    "EXECUTE MITIGATION PLAN" +
+                                "</button>" +
+                            "</div>";
+                        
+                        document.getElementById('ai-result').innerHTML = resultHTML;
+                    }, 2500);
+                };
