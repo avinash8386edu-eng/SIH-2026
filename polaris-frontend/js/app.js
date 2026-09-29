@@ -2901,15 +2901,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="width: 250px; height: 250px; border-radius: 50%; border: 4px dashed #FF003C; display: flex; justify-content: center; align-items: center; position: relative; animation: slowSpin 10s linear infinite;">
                         <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 50px rgba(255,0,60,0.2);"></div>
                     </div>
-                    <button id="sos-btn" style="position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, #FF003C 0%, #8a0020 100%); border: 5px solid #111; color: #fff; font-size: 32px; font-weight: 900; letter-spacing: 4px; box-shadow: 0 10px 30px rgba(255,0,60,0.5), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: 0.2s;" onmousedown="window.startSOSHold()" onmouseup="window.cancelSOSHold()" onmouseleave="window.cancelSOSHold()">
+                    <button id="sos-btn" style="position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, #FF003C 0%, #8a0020 100%); border: 5px solid #111; color: #fff; font-size: 32px; font-weight: 900; letter-spacing: 4px; box-shadow: 0 10px 30px rgba(255,0,60,0.5), inset 0 0 20px rgba(0,0,0,0.5); cursor: pointer; transition: 0.2s;" onclick="window.triggerSOSSequence()">
                         SOS
                     </button>
                     <div style="margin-top: 50px; color: #FF003C; font-family: var(--font-mono); font-size: 14px; letter-spacing: 2px;">
-                        CLICK AND HOLD FOR 3 SECONDS TO TRANSMIT DISTRESS
+                        CLICK TO TRANSMIT DISTRESS SIGNAL
                     </div>
-                    <div id="sos-progress-container" style="margin-top: 20px; width: 300px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; display: none;">
-                        <div id="sos-progress-bar" style="height: 100%; width: 0%; background: #FF003C;"></div>
-                    </div>
+                    
                 </div>
 
                 <!-- ACTIVE STATE: EMERGENCY DASHBOARD (Hidden by default) -->
