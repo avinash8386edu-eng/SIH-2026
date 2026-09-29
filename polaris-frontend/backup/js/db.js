@@ -1,7 +1,7 @@
 import { generateFullSeed, CONSTANTS } from './data/seed.js';
 
 // Dexie is loaded via CDN in index.html (window.Dexie)
-const db = new Dexie("HimSetuDB");
+const db = new Dexie("PolarisDB");
 
 db.version(1).stores({
     personnel: 'id, role, station',

@@ -1,0 +1,16 @@
+{
+  "name": "POLARIS Command Center",
+  "short_name": "POLARIS",
+  "description": "Indian Antarctic Expedition Management System",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#0D1B2A",
+  "theme_color": "#0D1B2A",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/869/869869.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/intelligence")
 @RequiredArgsConstructor
+@CrossOrigin(originPatterns = "*")
 public class IntelligenceController {
 
     private final RiskEngine riskEngine;

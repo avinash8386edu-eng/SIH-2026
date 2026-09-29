@@ -18,6 +18,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/cargo")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class CargoController {
 
     private final CargoRepository cargoRepository;
@@ -62,9 +63,14 @@ public class CargoController {
         }
         Cargo cargo = cargoOpt.orElseThrow(() -> new ResourceNotFoundException("Cargo not found with QR: " + qrCode));
         
-        event.setCargoId(cargo.getId());
-        event.setEventType(com.polaris.model.CargoEventType.SCANNED);
-        return ResponseEntity.status(HttpStatus.CREATED).body(cargoEventRepository.save(event));
+        return ResponseEntity.status(HttpStatus.CREATED).body(processCargoEvent(cargo, event));
+    }
+
+    @PostMapping("/{id}/scan")
+    public ResponseEntity<CargoEvent> createCargoEvent(@PathVariable Long id, @RequestBody CargoEvent event) {
+        Cargo cargo = cargoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cargo not found with id: " + id));
+        return ResponseEntity.status(HttpStatus.CREATED).body(processCargoEvent(cargo, event));
     }
 
     @PutMapping("/{id}/status")
@@ -90,12 +96,28 @@ public class CargoController {
         return ResponseEntity.ok(cargoEventRepository.findByCargoIdOrderByTimestampAsc(id));
     }
 
-    @PostMapping("/{id}/scan")
-    public ResponseEntity<CargoEvent> createCargoEvent(@PathVariable Long id, @RequestBody CargoEvent event) {
-        Cargo cargo = cargoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cargo not found with id: " + id));
+    private CargoEvent processCargoEvent(Cargo cargo, CargoEvent event) {
         event.setCargoId(cargo.getId());
         event.setEventType(com.polaris.model.CargoEventType.SCANNED); 
-        return ResponseEntity.status(HttpStatus.CREATED).body(cargoEventRepository.save(event));
+        event.setTimestamp(java.time.LocalDateTime.now());
+
+        // Cryptographic Chain of Custody implementation
+        List<CargoEvent> timeline = cargoEventRepository.findByCargoIdOrderByTimestampAsc(cargo.getId());
+        String previousHash = "0000000000000000000000000000000000000000000000000000000000000000"; // Genesis hash
+        if (!timeline.isEmpty()) {
+            CargoEvent lastEvent = timeline.get(timeline.size() - 1);
+            if (lastEvent.getEventHash() != null) {
+                previousHash = lastEvent.getEventHash();
+            }
+        }
+        
+        event.setPreviousEventHash(previousHash);
+        
+        // Hash payload: cargoId + timestamp + location + previousHash
+        String payload = cargo.getId() + "|" + event.getTimestamp().toString() + "|" + 
+                         (event.getLocation() != null ? event.getLocation() : "UNKNOWN") + "|" + previousHash;
+        event.setEventHash(com.polaris.util.HashUtils.generateSHA256(payload));
+
+        return cargoEventRepository.save(event);
     }
 }

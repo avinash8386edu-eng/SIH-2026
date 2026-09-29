@@ -30,6 +30,7 @@ public class Alert {
     private Long stationId;
     private String entityType;
     private Long entityId;
+    private String sourceLocation;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

@@ -27,6 +27,10 @@ public class CargoEvent {
     private Double longitude;
     private String notes;
 
+    // Cryptographic Chain of Custody
+    private String eventHash;
+    private String previousEventHash;
+
     private LocalDateTime timestamp;
 
     @PrePersist

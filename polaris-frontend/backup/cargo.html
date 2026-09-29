@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLARIS - Cargo QR Logistics</title>
+    <link rel="stylesheet" href="css/main.css">
+    <meta name="theme-color" content="#000000">
+</head>
+<body class="oled-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">POLARIS</div>
+            <a href="dashboard.html">🗺️ Expedition Planning</a>
+            <a href="cargo.html" class="active">📦 Cargo Tracking</a>
+            <a href="inventory.html">❄️ Inventory</a>
+            <a href="personnel.html">🚶 Personnel Movement</a>
+            <a href="satellite.html">🛰️ Satellite Routing</a>
+            <a href="fuel.html">⛽ Fuel Monitoring</a>
+            <a href="emergency.html">🚨 Emergency / SOS</a>
+            <a href="#" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+        </div>
+
+        <div class="main-content">
+            <h2 style="color: var(--accent-cyan);">Advanced QR Optical Scanner & Logistics</h2>
+            
+            <div class="dashboard-grid">
+                <div class="card" >
+                    <h3 style="color:var(--accent-yellow);">Optical Hardware Scanner</h3>
+                    <p style="color:var(--text-secondary);">Hold asset QR code to webcam.</p>
+                    <button id="startScannerBtn" class="btn btn-primary">Start Scanner</button>
+                    <div id="reader" style="width:100%; border:2px solid var(--border-color); border-radius:8px; display:none; margin-top:10px;"></div>
+                </div>
+
+                <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <h3 style="color:var(--accent-cyan);">Payload Export (Ministry Report)</h3>
+                        <p style="color:var(--text-secondary);">Generate Manifest AL-1403 with Ice Core Metadata & ISO Limits.</p>
+                        <button class="btn btn-primary" onclick="exportAL1403()">Export AL-1403 PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>Active Payload Database (Bharati / Maitri)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cargo Code</th>
+                            <th>Payload Name</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Scripts -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="js/db.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cargo.js"></script>
+    <!-- WebSocket Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/advanced-sos.js"></script>
+    <script src="js/global-ui.js"></script>
+</body>
+</html>
+
+
