@@ -40,8 +40,14 @@ function injectGlobalUI() {
     // Top Bar Container
     const topBar = document.createElement('div');
     topBar.className = 'top-ui-bar';
-    topBar.style.marginTop = '35px'; // Offset for the banner
-    document.body.appendChild(topBar);
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+        mainContent.prepend(topBar);
+    } else {
+        topBar.style.marginTop = '35px'; // Offset for the banner
+        document.body.prepend(topBar);
+    }
+    document.body.classList.add('has-vsat');
 
     // Power Mode Toggle
     const powerBtn = document.createElement('div');

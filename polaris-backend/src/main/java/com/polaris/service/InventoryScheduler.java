@@ -42,9 +42,13 @@ public class InventoryScheduler {
         // 2. Check for low stock
         List<Inventory> lowStockItems = inventoryRepository.findLowStock();
         for (Inventory item : lowStockItems) {
-             String message = "RESTOCK ALERT: Low stock for " + item.getItemName() + ". Current: " + item.getQuantity() + " " + item.getUnit() + ", Min: " + item.getMinimumThreshold();
-             log.warn(message);
-             messagingTemplate.convertAndSend("/topic/inventory-alerts", message);
+            if (!Boolean.TRUE.equals(item.getAlertSent())) {
+                String message = "RESTOCK ALERT: Low stock for " + item.getItemName() + ". Current: " + item.getQuantity() + " " + item.getUnit() + ", Min: " + item.getMinimumThreshold();
+                log.warn(message);
+                messagingTemplate.convertAndSend("/topic/inventory-alerts", message);
+                item.setAlertSent(true);
+                inventoryRepository.save(item);
+            }
         }
         
         log.info("Automated inventory checks completed.");

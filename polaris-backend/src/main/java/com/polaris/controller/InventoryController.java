@@ -32,5 +32,16 @@ public class InventoryController {
         LocalDate nextMonth = LocalDate.now().plusDays(30);
         return ResponseEntity.ok(inventoryRepository.findExpiringBefore(nextMonth));
     }
-}
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Inventory> updateInventory(@PathVariable Long id, @RequestBody Inventory updated) {
+        Inventory existing = inventoryRepository.findById(id)
+                .orElseThrow(() -> new com.polaris.exception.ResourceNotFoundException("Inventory not found with id: " + id));
+        
+        if (updated.getQuantity() != null) {
+            existing.setQuantity(updated.getQuantity());
+        }
+        
+        return ResponseEntity.ok(inventoryRepository.save(existing));
+    }
+}

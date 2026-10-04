@@ -19,30 +19,49 @@ public class DataSeeder implements CommandLineRunner {
     private final AssetRepository assetRepository;
     private final InventoryRepository inventoryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ExpeditionRepository expeditionRepository;
 
     @Override
     public void run(String... args) throws Exception {
+        seedExpeditions();
         seedUsers();
         seedAssets();
         seedInventory();
         System.out.println("Ã¢Å“â€¦ 44th ISEA Data Seeded Successfully with MASSIVE payload!");
     }
 
+    private void seedExpeditions() {
+        if (!expeditionRepository.findById(43L).isPresent()) {
+            Expedition exp = Expedition.builder()
+                .id(43L)
+                .name("43rd ISEA")
+                
+                .startDate(LocalDate.of(2023, 11, 1))
+                .endDate(LocalDate.of(2025, 4, 30))
+                .station(Station.BOTH)
+                .build();
+            expeditionRepository.save(exp);
+        }
+    }
+
     private void seedUsers() {
-        if (userRepository.count() == 0) {
-            String pass = passwordEncoder.encode("admin123");
-            userRepository.saveAll(List.of(
-                buildUser("Denney George (VU2DGR)", "admin@polaris.com", pass, Role.ADMIN, "BASE_COMMAND", -70.7667, 11.7333),
-                buildUser("Dr. Anjali Sharma", "anjali@polaris.com", pass, Role.SCIENTIST, "ON_TRAVERSE", -71.5000, 11.2000),
-                buildUser("Capt. Vikram Singh", "vikram@polaris.com", pass, Role.LOGISTICS, "AT_STATION", -70.7667, 11.7333),
-                buildUser("Dr. Rajesh Kumar", "rajesh@polaris.com", pass, Role.LOGISTICS, "AT_STATION", -70.7667, 11.7333),
-                buildUser("Amit Patel (Geologist)", "amit@polaris.com", pass, Role.SCIENTIST, "ON_TRAVERSE", -72.1000, 10.9000),
-                buildUser("Lt. Cdr. Priya", "priya@polaris.com", pass, Role.LOGISTICS, "IN_TRANSIT", -55.0, 70.0),
-                buildUser("Dr. Ritesh Desai", "ritesh@polaris.com", pass, Role.SCIENTIST, "QUARANTINE", -33.9249, 18.4241),
-                buildUser("Pilot Arun Verma", "arun@polaris.com", pass, Role.LOGISTICS, "ON_TRAVERSE", -69.50, 76.0),
-                buildUser("Mechanic John Doe", "john@polaris.com", pass, Role.LOGISTICS, "AT_STATION", -69.40, 76.19),
-                buildUser("Dr. Meera N.", "meera@polaris.com", pass, Role.SCIENTIST, "AT_STATION", -69.40, 76.19)
-            ));
+        seedUserIfNotExists("Denney George (VU2DGR)", "admin@polaris.com", "admin123", Role.ADMIN, "ACTIVE");
+        seedUserIfNotExists("Subrata Moulik (Maitri)", "commander@polaris.com", "commander123", Role.COMMANDER, "ACTIVE");
+        seedUserIfNotExists("Dr. Yogesh Ray (Expedition Leader)", "scientist1@polaris.com", "sci123", Role.SCIENTIST, "ON_TRAVERSE");
+        seedUserIfNotExists("Showmitra Chowdhury (CSC)", "scientist2@polaris.com", "sci123", Role.SCIENTIST, "ON_TRAVERSE");
+    }
+
+    private void seedUserIfNotExists(String name, String email, String password, Role role, String status) {
+        if (!userRepository.findByEmail(email).isPresent()) {
+            User user = User.builder()
+                    .name(name)
+                    .email(email)
+                    .passwordHash(passwordEncoder.encode(password))
+                    .role(role)
+                    .expeditionId(43L)
+                    .currentStatus(status)
+                    .build();
+            userRepository.save(user);
         }
     }
 

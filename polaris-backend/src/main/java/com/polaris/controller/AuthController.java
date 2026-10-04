@@ -11,11 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,6 +29,11 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "ok", "system", "POLARIS Backend Online"));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -47,7 +55,12 @@ public class AuthController {
                 .build();
 
         var jwtToken = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).build());
+        return ResponseEntity.ok(AuthResponse.builder()
+                .token(jwtToken)
+                .role(user.getRole().name())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build());
     }
 
     @PostMapping("/login")
@@ -64,7 +77,12 @@ public class AuthController {
                 .build();
 
         var jwtToken = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(AuthResponse.builder().token(jwtToken).build());
+        return ResponseEntity.ok(AuthResponse.builder()
+                .token(jwtToken)
+                .role(user.getRole().name())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build());
     }
 }
 
