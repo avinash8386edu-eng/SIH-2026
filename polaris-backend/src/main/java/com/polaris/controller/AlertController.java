@@ -17,10 +17,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AlertController {
 
     private final AlertRepository alertRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final com.polaris.service.DocumentArchiveService documentArchiveService;
 
     @PostMapping("/sos")
     public ResponseEntity<Alert> createSosAlert(@RequestBody Alert alert) {
@@ -61,6 +63,15 @@ public class AlertController {
                 .orElseThrow(() -> new ResourceNotFoundException("Alert not found with id: " + id));
         alert.setStatus(AlertStatus.RESOLVED);
         alert.setResolvedAt(LocalDateTime.now());
-        return ResponseEntity.ok(alertRepository.save(alert));
+        
+        Alert savedAlert = alertRepository.save(alert);
+        
+        if (com.polaris.model.AlertType.SOS.equals(alert.getAlertType())) {
+            String title = "Resolved SOS Log: " + alert.getTitle();
+            String content = "SOS Alert Resolved at " + alert.getResolvedAt() + "\nDetails: " + alert.getMessage();
+            documentArchiveService.archiveSOS(title, content, alert.getEntityId(), "SYSTEM");
+        }
+        
+        return ResponseEntity.ok(savedAlert);
     }
 }

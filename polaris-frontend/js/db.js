@@ -1,89 +1,53 @@
-const DB_NAME = 'PolarisDB';
-const DB_VERSION = 2; // Bumped to 2 for new stores
-const SOS_STORE = 'sos_offline_queue';
-const REQ_STORE = 'offline_requests';
+import { generateFullSeed, CONSTANTS } from './data/seed.js';
 
-function initDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(SOS_STORE)) {
-                db.createObjectStore(SOS_STORE, { keyPath: 'id', autoIncrement: true });
-            }
-            if (!db.objectStoreNames.contains(REQ_STORE)) {
-                db.createObjectStore(REQ_STORE, { keyPath: 'id', autoIncrement: true });
-            }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+// Dexie is loaded via CDN in index.html (window.Dexie)
+const db = new Dexie("HimSetuDB");
+
+db.version(1).stores({
+    personnel: 'id, role, station',
+    cargo: 'id, status, destination',
+    custodyEvents: '++id, cargoId, timestamp',
+    inventory: 'id, category, station',
+    transfers: '++id, itemId, status',
+    assets: 'id, type, station',
+    maintenance: '++id, assetId, dueDate',
+    missions: 'id, status', // equivalent to traverses
+    incidents: 'id, severity, status',
+    syncQueue: '++id, action, timestamp',
+    metadata: 'key'
+});
+
+export async function initDB() {
+    try {
+        const count = await db.personnel.count();
+        if (count === 0) {
+            console.log("Seeding Dexie Database (First Run)...");
+            const seed = generateFullSeed();
+            
+            await db.transaction('rw', 
+                db.personnel, db.cargo, db.inventory, db.assets, 
+                db.missions, db.incidents, db.metadata, 
+                async () => {
+                    await db.personnel.bulkAdd(seed.personnel);
+                    await db.cargo.bulkAdd(seed.cargo);
+                    await db.inventory.bulkAdd(seed.inventory);
+                    await db.assets.bulkAdd(seed.assets);
+                    await db.missions.bulkAdd(seed.traverses);
+                    await db.incidents.bulkAdd(seed.incidents);
+                    await db.metadata.put({ key: "constants", value: seed.constants });
+            });
+            console.log("Database seeded successfully!");
+        }
+    } catch (err) {
+        console.error("Dexie init failed:", err);
+    }
 }
 
-// ---------------- Generic Request Queue (Phase 3) ----------------
-
-async function queueOfflineRequest(endpoint, method, data) {
-    const db = await initDB();
-    const payload = { endpoint, method, data, timestamp: new Date().toISOString() };
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(REQ_STORE, 'readwrite');
-        tx.objectStore(REQ_STORE).add(payload);
-        tx.oncomplete = () => {
-            console.log(`[Blizzard Mode] Queued ${method} ${endpoint} for offline sync.`);
-            resolve();
-        };
-        tx.onerror = () => reject(tx.error);
-    });
+export async function resetDemoData() {
+    await db.delete();
+    await db.open();
+    await initDB();
+    window.location.reload();
 }
 
-async function getOfflineRequests() {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(REQ_STORE, 'readonly');
-        const request = tx.objectStore(REQ_STORE).getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function deleteOfflineRequest(id) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(REQ_STORE, 'readwrite');
-        tx.objectStore(REQ_STORE).delete(id);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
-}
-
-// ---------------- Legacy SOS Queue ----------------
-
-async function addOfflineSOS(payload) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SOS_STORE, 'readwrite');
-        tx.objectStore(SOS_STORE).add(payload);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
-}
-
-async function getOfflineSOS() {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SOS_STORE, 'readonly');
-        const request = tx.objectStore(SOS_STORE).getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function deleteOfflineSOS(id) {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SOS_STORE, 'readwrite');
-        tx.objectStore(SOS_STORE).delete(id);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
-}
+export default db;
