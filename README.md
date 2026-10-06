@@ -232,10 +232,10 @@ Him-Setu implements defense-grade security measures appropriate for government s
 
 <div align="center">
 
-> **📹 Full prototype walkthrough available on YouTube.**  
-> Demonstrates Offline Sync, SOS Emergency, QR Cargo Scanning, AI Risk Prediction, and Satellite Routing.
+[![Him-Setu Demo](https://img.youtube.com/vi/ZanieSzf5uY/maxresdefault.jpg)](https://www.youtube.com/watch?v=ZanieSzf5uY)
 
-*[YouTube demo link to be added here]*
+**▶️ Click the image above to watch the full prototype walkthrough.**  
+*Demonstrates Offline Sync, SOS Emergency, QR Cargo Scanning, AI Risk Prediction, and Satellite Routing.*
 
 </div>
 
